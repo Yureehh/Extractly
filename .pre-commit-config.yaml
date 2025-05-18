@@ -1,0 +1,56 @@
+---
+repos:
+  # Upgrade Python syntax to newer versions
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+    hooks:
+      - id: pyupgrade
+
+  # Lint & auto-fix with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.10
+    hooks:
+      - id: ruff
+        args: [".", "--fix", "--unsafe-fixes"]
+
+  # General purpose pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-docstring-first      # Enforce docstrings at the start
+      - id: check-json                 # Validate JSON files
+      - id: check-merge-conflict       # Prevent merge conflicts
+      - id: check-yaml                 # Validate YAML files
+      - id: debug-statements           # Remove debug statements (e.g., pdb)
+      - id: end-of-file-fixer          # Ensure newline at EOF
+      - id: trailing-whitespace        # Remove trailing whitespaces
+      - id: requirements-txt-fixer     # Fix requirements.txt formatting
+
+  # Detect secrets in code
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+
+  # Enforce consistent commit messages
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+
+  # Python-specific hooks
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-mock-methods       # Catch incorrect use of mock methods
+      - id: python-use-type-annotations     # Enforce type annotations
+      - id: python-check-blanket-noqa       # Avoid overuse of noqa
+      - id: python-use-type-annotations     # Enforce type annotations
+      - id: text-unicode-replacement-char   # Detect unicode replacement chars
+
+  # # Validate and sort YAML files
+  # - repo: https://github.com/adrienverge/yamllint
+  #   rev: v1.29.0
+  #   hooks:
+  #     - id: yamllint
+        # args: ["--strict"]
