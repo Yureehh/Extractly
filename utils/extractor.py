@@ -57,8 +57,7 @@ def extract(images: list[Image.Image], schema: list[dict]) -> dict:
     try:
         raw = json.loads(resp)
     except json.JSONDecodeError:
-        m = re.search(r"\{.*\}", resp, flags=re.DOTALL)
-        if m:
+        if m := re.search(r"\{.*\}", resp, flags=re.DOTALL):
             try:
                 raw = json.loads(m.group())
             except json.JSONDecodeError:
