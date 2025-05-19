@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import os
 import time
-from PIL import Image
 from utils.preprocess import preprocess
 from utils.schema_manager import SchemaManager
 from utils.classifier import classify
@@ -109,7 +108,7 @@ with type_col:
                 st.success(f"Detected type: {cls['doc_type']}")
                 # clear the radio state so it switches to 'Specify Type'
                 del st.session_state["mode"]
-                st.experimental_rerun()
+                st.rerun()
     else:
         default_idx = 0
         if st.session_state.cls_resp:
@@ -157,12 +156,12 @@ with right_col:
         if fn and fd:
             st.session_state.custom_fields.append({"name": fn, "description": fd})
             st.success(f"Added field '{fn}'")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Both name and description are required.")
     if st.session_state.custom_fields and st.button("Clear Fields"):
         st.session_state.custom_fields = []
-        st.experimental_rerun()
+        st.rerun()
 
 # spacer
 st.markdown("<br><br>", unsafe_allow_html=True)
