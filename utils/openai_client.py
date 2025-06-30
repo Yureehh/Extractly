@@ -18,7 +18,7 @@ logging.basicConfig(
     handlers=[logging.FileHandler("extractor.log"), logging.StreamHandler()]
 )
 
-def get_chat_completion(messages, model="gpt-4o-mini", temperature=0):
+def get_chat_completion(messages, model="gpt-4o-mini", temperature=1):
     """
     Wrapper around OpenAI ChatCompletion.
     messages should be a list of dicts: {"role":..., "content":...}

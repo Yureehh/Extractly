@@ -39,5 +39,5 @@ def classify(images: list[Image.Image], candidates: list) -> dict:
     try:
         return json.loads(resp)
     except Exception:
-        logging.error("Failed to parse classification JSON; returning raw response")
+        logging.warning("Failed to parse classification JSON; returning raw response")
         return {"doc_type": resp.strip(), "reasoning": resp.strip()}

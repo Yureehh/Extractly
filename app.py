@@ -35,7 +35,7 @@ with st.sidebar:
     st.title("Settings")
     model_choice = st.selectbox(
         "LLM Model",
-        ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"],
+        ["o3", "o4-mini", "o3-mini", "gpt-4o"],
         index=0
     )
     os.environ["CLASSIFY_MODEL"] = model_choice
