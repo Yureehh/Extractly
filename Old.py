@@ -2,10 +2,10 @@ import streamlit as st
 import json
 import os
 import time
-from utils.preprocess import preprocess
-from utils.schema_manager import SchemaManager
-from utils.classifier import classify
-from utils.extractor import extract
+from src.preprocess import preprocess
+from src.schema_manager import SchemaManager
+from src.classifier import classify
+from src.extractor import extract
 
 # Page config
 st.set_page_config(page_title="Universal Metadata Extractor", layout="wide")
