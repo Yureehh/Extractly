@@ -1,6 +1,7 @@
 import os
 import json
 from glob import glob
+from pathlib import Path
 
 
 class SchemaManager:
@@ -30,3 +31,17 @@ class SchemaManager:
 
     def get(self, doc_type: str):
         return self.schemas.get(doc_type)
+
+    def dump_custom(self, path: str | Path):
+        """Persist current schemas to JSON (helper)."""
+        with open(path, "w", encoding="utf-8") as fp:
+            json.dump(self.schemas, fp, indent=2, ensure_ascii=False)
+
+    def delete(self, doc_type: str) -> bool:
+        """Remove a doc-type. Return True if it existed."""
+        return self.schemas.pop(doc_type, None) is not None
+
+    def rename(self, old: str, new: str) -> None:
+        """Rename a doc-type (overwriting 'new' if it exists)."""
+        if old in self.schemas:
+            self.schemas[new] = self.schemas.pop(old)

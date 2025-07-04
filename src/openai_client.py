@@ -15,8 +15,9 @@ client = OpenAI(api_key=api_key)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("extractor.log"), logging.StreamHandler()]
+    handlers=[logging.FileHandler("extractor.log"), logging.StreamHandler()],
 )
+
 
 def get_chat_completion(messages, model="gpt-4o-mini", temperature=1):
     """
@@ -24,7 +25,9 @@ def get_chat_completion(messages, model="gpt-4o-mini", temperature=1):
     messages should be a list of dicts: {"role":..., "content":...}
     """
     try:
-        resp = client.chat.completions.create(model=model, messages=messages, temperature=temperature)
+        resp = client.chat.completions.create(
+            model=model, messages=messages, temperature=temperature
+        )
         return resp.choices[0].message.content
     except Exception as e:
         logging.error(f"OpenAI error: {e}")

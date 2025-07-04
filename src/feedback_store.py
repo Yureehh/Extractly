@@ -1,6 +1,7 @@
 """
 Thin wrapper so backend code can reuse Streamlit-agnostic persistence.
 """
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -8,8 +9,8 @@ from datetime import datetime
 FEED_PATH = Path("data") / "feedback.jsonl"
 FEED_PATH.parent.mkdir(exist_ok=True)
 
-def record_feedback(doc_id: str, doc_type: str,
-                    extracted: dict, corrected: dict):
+
+def record_feedback(doc_id: str, doc_type: str, extracted: dict, corrected: dict):
     row = {
         "doc_id": doc_id,
         "doc_type": doc_type,

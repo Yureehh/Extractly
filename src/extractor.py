@@ -7,6 +7,7 @@ import re
 from PIL import Image
 from .openai_client import get_chat_completion
 
+
 def extract(images: list[Image.Image], schema: list[dict]) -> dict:
     """
     Extract metadata from the document image using the provided schema.
@@ -38,18 +39,17 @@ def extract(images: list[Image.Image], schema: list[dict]) -> dict:
 
     user_content = [
         {"type": "image_url", "image_url": {"url": data_uri}},
-        {"type": "text",      "text": f"Fields schema: {schema_json}"}
+        {"type": "text", "text": f"Fields schema: {schema_json}"},
     ]
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user",   "content": user_content}
+        {"role": "user", "content": user_content},
     ]
 
     # 4) Call the LLM
     resp = get_chat_completion(
-        messages,
-        model=os.getenv("EXTRACT_MODEL", "gpt-4o-mini")
+        messages, model=os.getenv("EXTRACT_MODEL", "gpt-4o-mini")
     )
 
     # 5) Parse and filter the JSON

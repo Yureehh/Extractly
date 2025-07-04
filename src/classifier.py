@@ -8,6 +8,7 @@ import logging
 from PIL import Image
 from .openai_client import get_chat_completion
 
+
 def classify(images: list[Image.Image], candidates: list) -> dict:
     """
     Classify document type by sending the first page image to the LLM.
@@ -22,18 +23,17 @@ def classify(images: list[Image.Image], candidates: list) -> dict:
     system_prompt = f"Choose exactly one document type from: {candidates}"
     # User content: text + image_url segment
     user_content = [
-        {"type": "text",      "text": system_prompt},
-        {"type": "image_url", "image_url": {"url": data_uri}}
+        {"type": "text", "text": system_prompt},
+        {"type": "image_url", "image_url": {"url": data_uri}},
     ]
 
     messages = [
         {"role": "system", "content": "You are a document classification assistant."},
-        {"role": "user",   "content": user_content}
+        {"role": "user", "content": user_content},
     ]
 
     resp = get_chat_completion(
-        messages,
-        model=os.getenv("CLASSIFY_MODEL", "gpt-4o-mini")
+        messages, model=os.getenv("CLASSIFY_MODEL", "gpt-4o-mini")
     )
 
     try:

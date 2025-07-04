@@ -34,9 +34,7 @@ if st.session_state.custom_schemas:
 with st.sidebar:
     st.title("Settings")
     model_choice = st.selectbox(
-        "LLM Model",
-        ["o3", "o4-mini", "o3-mini", "gpt-4o"],
-        index=0
+        "LLM Model", ["o3", "o4-mini", "o3-mini", "gpt-4o"], index=0
     )
     os.environ["CLASSIFY_MODEL"] = model_choice
     os.environ["EXTRACT_MODEL"] = model_choice
@@ -44,17 +42,15 @@ with st.sidebar:
     st.markdown("---")
     st.header("Custom Schemas")
     st.write("Paste a JSON mapping of new doc-types to field lists:")
-    placeholder = '''{
+    placeholder = """{
   "Passport": [
     {"name": "Passport Number", "description": "Unique passport ID."},
     {"name": "Full Name",         "description": "Holder’s full name."},
     {"name": "Nationality",       "description": "Citizenship country."}
   ]
-}'''
+}"""
     custom_json = st.text_area(
-        "Custom schema JSON",
-        height=150,
-        placeholder=placeholder
+        "Custom schema JSON", height=150, placeholder=placeholder
     )
     if st.button("Load Custom Schemas"):
         try:
@@ -72,9 +68,7 @@ input_col, _, type_col = st.columns([2, 0.2, 2])
 
 with input_col:
     st.subheader("Upload Document")
-    uploaded_file = st.file_uploader(
-        "PDF or image", type=["pdf", "png", "jpg", "jpeg"]
-    )
+    uploaded_file = st.file_uploader("PDF or image", type=["pdf", "png", "jpg", "jpeg"])
     if uploaded_file:
         images = preprocess(uploaded_file)
         st.image(images[0], caption="Preview", use_container_width=True)
@@ -87,7 +81,7 @@ with type_col:
         "Mode",
         ["Auto-detect", "Specify Type"],
         index=0 if st.session_state.cls_resp is None else 1,
-        key="mode"
+        key="mode",
     )
 
     if mode == "Auto-detect":
@@ -97,7 +91,7 @@ with type_col:
             "Context (optional)",
             key="class_desc",
             height=80,
-            placeholder="e.g. Invoices from Vendor X"
+            placeholder="e.g. Invoices from Vendor X",
         )
         if st.button("Classify Document"):
             if not uploaded_file:
@@ -116,9 +110,7 @@ with type_col:
             if dt in doc_types:
                 default_idx = doc_types.index(dt)
         selected = st.selectbox(
-            "Select document type",
-            options=doc_types,
-            index=default_idx
+            "Select document type", options=doc_types, index=default_idx
         )
 
 # spacer
@@ -131,8 +123,10 @@ st.write("Built-in fields auto-load; add or clear for custom schemas below.")
 st.markdown("<br>", unsafe_allow_html=True)
 left_col, _, right_col = st.columns([2, 0.2, 2])
 
-active_type = selected if mode == "Specify Type" else (
-    st.session_state.cls_resp and st.session_state.cls_resp.get("doc_type")
+active_type = (
+    selected
+    if mode == "Specify Type"
+    else (st.session_state.cls_resp and st.session_state.cls_resp.get("doc_type"))
 )
 
 with left_col:
@@ -150,8 +144,12 @@ with left_col:
 
 with right_col:
     st.markdown("**Add New Field:**")
-    fn = st.text_input("Field Name", key="new_field_name", placeholder="e.g. Invoice Number")
-    fd = st.text_input("Field Description", key="new_field_desc", placeholder="e.g. Total Amount")
+    fn = st.text_input(
+        "Field Name", key="new_field_name", placeholder="e.g. Invoice Number"
+    )
+    fd = st.text_input(
+        "Field Description", key="new_field_desc", placeholder="e.g. Total Amount"
+    )
     if st.button("Add Field"):
         if fn and fd:
             st.session_state.custom_fields.append({"name": fn, "description": fd})

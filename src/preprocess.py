@@ -2,6 +2,7 @@ import io
 from pdf2image import convert_from_bytes
 from PIL import Image
 
+
 def preprocess(uploaded) -> list[Image.Image]:
     """
     Convert a PDF or image upload into a list of PIL Images.

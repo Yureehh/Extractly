@@ -1,22 +1,25 @@
 """
 Batch inference page – thumbnails, extraction, and inline correction grid.
 """
+
 import streamlit as st
-from uuid import uuid4
-import time, json
+import time
+import json
 from src.preprocess import preprocess
 from src.schema_manager import SchemaManager
 from src.classifier import classify
 from src.extractor import extract
-from src.utils import show_thumbnails, save_feedback, load_feedback, generate_doc_id
+from src.utils import show_thumbnails, save_feedback, generate_doc_id
 
 st.set_page_config(page_title="Inference", page_icon="🔍", layout="wide")
 st.title("🔍 Inference")
 
 schema_mgr = SchemaManager()
-files = st.file_uploader("Upload PDFs or images",
-                         type=["pdf", "png", "jpg", "jpeg"],
-                         accept_multiple_files=True)
+files = st.file_uploader(
+    "Upload PDFs or images",
+    type=["pdf", "png", "jpg", "jpeg"],
+    accept_multiple_files=True,
+)
 
 if not files:
     st.info("Awaiting uploads …")
@@ -38,12 +41,14 @@ if st.button("Run extraction on all docs"):
         meta = extract(images, fields)
         rows.append(
             {
-                "doc_id"            : generate_doc_id(file),
-                "file_name"         : file.name,
-                "doc_type"          : doc_type,
+                "doc_id": generate_doc_id(file),
+                "file_name": file.name,
+                "doc_type": doc_type,
                 "metadata_extracted": json.dumps(meta["metadata"], ensure_ascii=False),
-                "metadata_corrected": json.dumps(meta["metadata"], ensure_ascii=False),  # editable
-                "timestamp"         : time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "metadata_corrected": json.dumps(
+                    meta["metadata"], ensure_ascii=False
+                ),  # editable
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
             }
         )
         progress.progress(idx / len(files))
@@ -53,5 +58,5 @@ if st.button("Run extraction on all docs"):
 
     if st.button("Save"):
         for row in edited:
-            save_feedback(row)   # JSON-based persistence
+            save_feedback(row)  # JSON-based persistence
         st.success("👍 Corrections saved.")

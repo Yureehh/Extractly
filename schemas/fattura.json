@@ -1,0 +1,16 @@
+{
+  "Fattura": [
+    { "name": "Numero fattura", "description": "Progressivo / anno" },
+    { "name": "Data fattura", "description": "Data di emissione" },
+    { "name": "Fornitore", "description": "Ragione sociale del fornitore" },
+    {
+      "name": "Partita IVA",
+      "description": "P.IVA o codice fiscale del fornitore"
+    },
+    { "name": "Cliente", "description": "Ragione sociale o nome cliente" },
+    { "name": "Totale imponibile", "description": "Importo senza IVA" },
+    { "name": "IVA", "description": "Importo IVA" },
+    { "name": "Totale documento", "description": "Importo totale da pagare" },
+    { "name": "Valuta", "description": "EUR, USD, ecc." }
+  ]
+}
