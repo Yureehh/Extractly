@@ -1,24 +1,27 @@
 {
-  "CAI": [
-    { "name": "Data sinistro", "description": "Data dell'incidente" },
-    {
-      "name": "Ora sinistro",
-      "description": "Ora in cui è avvenuto l'incidente"
-    },
-    { "name": "Luogo", "description": "Indirizzo / km / incrocio" },
-    {
-      "name": "Conducente A",
-      "description": "Nome e cognome conducente veicolo A"
-    },
-    {
-      "name": "Conducente B",
-      "description": "Nome e cognome conducente veicolo B"
-    },
-    { "name": "Targa veicolo A", "description": "Numero di targa veicolo A" },
-    { "name": "Targa veicolo B", "description": "Numero di targa veicolo B" },
-    {
-      "name": "Descrizione evento",
-      "description": "Sintesi dinamica dell’incidente"
-    }
-  ]
+  "CAI": {
+    "description": "Constatazione Amichevole di Incidente (CAI): modulo per dichiarare i dettagli di un sinistro stradale fra due veicoli.",
+    "fields": [
+      { "name": "Data sinistro", "description": "Data dell'incidente" },
+      {
+        "name": "Ora sinistro",
+        "description": "Ora in cui è avvenuto l'incidente"
+      },
+      { "name": "Luogo", "description": "Indirizzo / km / incrocio" },
+      {
+        "name": "Conducente A",
+        "description": "Nome e cognome conducente veicolo A"
+      },
+      {
+        "name": "Conducente B",
+        "description": "Nome e cognome conducente veicolo B"
+      },
+      { "name": "Targa veicolo A", "description": "Numero di targa veicolo A" },
+      { "name": "Targa veicolo B", "description": "Numero di targa veicolo B" },
+      {
+        "name": "Descrizione evento",
+        "description": "Sintesi dinamica dell’incidente"
+      }
+    ]
+  }
 }

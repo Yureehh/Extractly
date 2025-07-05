@@ -46,4 +46,11 @@ A plug-and-play Python framework to classify and extract metadata from PDFs and 
 - Implement additional OCR engines by extending `utils/preprocess.py`.
 - Swap or fine-tune models via `utils/openai_client.py`.
 
-"""
+
+# TODOs:
+- Passare l'ocr del doc
+- Correzione dei metadati estratti + Apprendere dagli errori, salvo le ultime N estrazioni dello stesso tipo di doc (solo errate?) e gliele passo
+- Confidenza estrazioni
+- Aggiustare cards in Home
+- Fare sides fighe in cui dici flusso ed “agenti”
+- Tracciare kpi

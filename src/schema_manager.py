@@ -16,21 +16,30 @@ class SchemaManager:
         self._load_schemas()
 
     def _load_schemas(self):
-        files = glob(os.path.join(self.schema_dir, "*.json"))
-        for f in files:
-            with open(f, "r") as fp:
+        for f in glob(os.path.join(self.schema_dir, "*.json")):
+            with open(f, "r", encoding="utf-8") as fp:
                 data = json.load(fp)
-                for doc_type, fields in data.items():
-                    self.schemas[doc_type] = fields
+            for doc_type, payload in data.items():
+                # 🔄 if payload is list → wrap in new structure
+                if isinstance(payload, list):
+                    payload = {"description": "", "fields": payload}
+                self.schemas[doc_type] = payload
 
     def add_custom(self, custom: dict):
-        self.schemas.update(custom)
+        wrapped = {
+            k: {"description": "", "fields": v} if isinstance(v, list) else v
+            for k, v in custom.items()
+        }
+        self.schemas.update(wrapped)
 
     def get_types(self):
         return sorted(self.schemas.keys())
 
-    def get(self, doc_type: str):
-        return self.schemas.get(doc_type)
+    def get(self, doc_type: str) -> list[dict]:
+        return (self.schemas.get(doc_type) or {}).get("fields", [])
+
+    def get_description(self, doc_type: str) -> str:
+        return (self.schemas.get(doc_type) or {}).get("description", "")
 
     def dump_custom(self, path: str | Path):
         """Persist current schemas to JSON (helper)."""

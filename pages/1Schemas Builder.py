@@ -81,7 +81,7 @@ with st.sidebar:
                 if st.button("✔️ Confirm rename"):
                     old = st.session_state.editing_doc
                     SM.rename(old, new_name)
-                    custom_data[new_name] = custom_data.pop(old, {})
+                    custom_data[new_name] = custom_data.pop(old)
                     CUSTOM_JSON.write_text(
                         json.dumps(custom_data, indent=2, ensure_ascii=False)
                     )
@@ -95,7 +95,7 @@ with st.sidebar:
 
     # ── Clear all ────────────────────────────────────────────────
     with col_clear:
-        if st.button("🚮 Clear ALL custom schemas"):
+        if st.button("🚮 Clear all CUSTOM schemas"):
             custom_data.clear()
             CUSTOM_JSON.unlink(missing_ok=True)
             st.session_state.editing_doc = None
@@ -146,7 +146,12 @@ if doc_name != st.session_state.editing_doc:
         st.session_state.field_data = [{"name": "", "description": ""}]
 
 st.subheader(f"Fields for **{doc_name}**")
-st.caption("Add / edit rows. Leave *name* blank to delete that row.")
+
+schema_desc = st.text_area(
+    "High-level description",
+    value=SM.get_description(doc_name),
+    placeholder="e.g. Italian electronic invoice issued by suppliers…",
+)
 
 raw_table = st.data_editor(
     st.session_state.field_data,  # static snapshot
@@ -175,21 +180,18 @@ col_save, col_reset = st.columns(2)
 
 with col_save:
     if st.button("💾 Save schema"):
-        clean = [row for row in table_rows if row.get("name")]
-        print(f"Saving {len(clean)} fields for {doc_name} ...")
-        print(clean)
+        clean = [row for row in table_rows if row["name"]]
         if not clean:
             st.error("Must have at least one field.")
         else:
-            SM.add_custom({doc_name: clean})
-            custom_data[doc_name] = clean
+            payload = {"description": schema_desc.strip(), "fields": clean}
+            SM.add_custom({doc_name: payload})
+            custom_data[doc_name] = payload  # ← store whole dict
             CUSTOM_JSON.write_text(
                 json.dumps(custom_data, indent=2, ensure_ascii=False)
             )
-            print(CUSTOM_JSON.read_text())
             st.success(f"Saved {len(clean)} fields for “{doc_name}”.")
-            # stay on the current schema -- no reset flag
-            st.session_state.field_data = clean  # keep edited rows
+            st.session_state.field_data = clean
             st.session_state.editing_doc = doc_name
 
 with col_reset:

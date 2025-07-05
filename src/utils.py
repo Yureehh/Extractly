@@ -12,8 +12,10 @@ import streamlit as st
 from PIL import Image
 
 DATA_DIR = Path("data")
+SCHEMAS_DIR = Path("schemas")
 FEED_PATH = DATA_DIR / "feedback.jsonl"
 DATA_DIR.mkdir(exist_ok=True)
+SCHEMAS_DIR.mkdir(exist_ok=True)
 
 
 # ---------- 🖼️  thumbnails ----------
@@ -47,3 +49,18 @@ def load_feedback() -> list[dict]:
 def generate_doc_id(uploaded_file) -> str:
     """Create stable ID from file checksum."""
     hashlib.sha256(uploaded_file.getvalue()).hexdigest()[:16]
+
+
+def upsert_feedback(new_row: dict, path: Path = Path("data") / "feedback.jsonl"):
+    """Write row; overwrite existing line with same doc_id."""
+    rows = []
+    if path.exists():
+        with path.open(encoding="utf-8") as fp:
+            rows = [json.loads(x) for x in fp if x.strip()]
+
+    rows = [r for r in rows if r.get("doc_id") != new_row["doc_id"]]
+    rows.append(new_row)
+
+    with path.open("w", encoding="utf-8") as fp:
+        for r in rows:
+            fp.write(json.dumps(r, ensure_ascii=False) + "\n")
