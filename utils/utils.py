@@ -11,11 +11,17 @@ from typing import Iterable
 import streamlit as st
 from PIL import Image
 
-DATA_DIR = Path("data")
-SCHEMAS_DIR = Path("schemas")
+# Get the project root directory (parent of the src directory)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+SCHEMAS_DIR = PROJECT_ROOT / "schemas"
 FEED_PATH = DATA_DIR / "feedback.jsonl"
+
+# Ensure directories exist
 DATA_DIR.mkdir(exist_ok=True)
 SCHEMAS_DIR.mkdir(exist_ok=True)
+
+DEFAULT_OPENAI_MODEL = "o4-mini"  # Default model for OpenAI API calls
 
 
 # ---------- 🖼️  thumbnails ----------
@@ -48,11 +54,14 @@ def load_feedback() -> list[dict]:
 # ---------- 🔑  deterministic id ----------
 def generate_doc_id(uploaded_file) -> str:
     """Create stable ID from file checksum."""
-    hashlib.sha256(uploaded_file.getvalue()).hexdigest()[:16]
+    return hashlib.sha256(uploaded_file.getvalue()).hexdigest()[:16]
 
 
-def upsert_feedback(new_row: dict, path: Path = Path("data") / "feedback.jsonl"):
+def upsert_feedback(new_row: dict, path: Path = None):
     """Write row; overwrite existing line with same doc_id."""
+    if path is None:
+        path = FEED_PATH
+
     rows = []
     if path.exists():
         with path.open(encoding="utf-8") as fp:
@@ -64,3 +73,11 @@ def upsert_feedback(new_row: dict, path: Path = Path("data") / "feedback.jsonl")
     with path.open("w", encoding="utf-8") as fp:
         for r in rows:
             fp.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+
+# ---------- 🔍  diff fields ----------
+def diff_fields(original: dict, corrected: dict) -> list[str]:
+    """
+    Return a list of field names whose value changed (case-sensitive compare).
+    """
+    return [k for k, v in corrected.items() if v != original.get(k)]

@@ -4,7 +4,11 @@ Landing page – stylish hero header + live stats.
 
 from datetime import datetime, timezone
 import streamlit as st
-from src.utils import load_feedback
+from utils.utils import load_feedback
+from dotenv import load_dotenv
+
+# Load API key from .env
+load_dotenv(override=True)  # override any existing env vars
 
 # ── colours
 DARK_CARD_BG = "#0f172a"  # darker slate
@@ -53,7 +57,7 @@ feedback = load_feedback()
 today_utc = datetime.now(timezone.utc).date()
 
 total_docs = len({r["doc_id"] for r in feedback})
-total_fields = sum(len(r.get("metadata_corrected", {})) for r in feedback)
+total_fields_corrected = sum(len(r.get("fields_corrected", [])) for r in feedback)
 
 docs_today = 0
 for r in feedback:
@@ -66,9 +70,9 @@ for r in feedback:
 # ── metric cards
 cols = st.columns(3)
 values = [
-    ("Docs Today", docs_today),
-    ("Total Docs", total_docs),
-    ("Fields Corrected", total_fields),
+    ("Docs Reviewed Today", docs_today),
+    ("Total Reviewed Docs", total_docs),
+    ("Total Fields Corrected", total_fields_corrected),
 ]
 
 for col, (label, val) in zip(cols, values):

@@ -3,42 +3,48 @@
 import os
 import io
 import base64
-import json
-import logging
 from PIL import Image
-from .openai_client import get_chat_completion
+from utils.openai_client import get_chat_completion
+from statistics import mode, StatisticsError
+from utils.utils import DEFAULT_OPENAI_MODEL
 
 
-def classify(images: list[Image.Image], candidates: list) -> dict:
-    """
-    Classify document type by sending the first page image to the LLM.
-    Returns a dict with keys 'doc_type' and optional 'reasoning'.
-    """
-    # Encode image as a data URI
-    buf = io.BytesIO()
-    images[0].save(buf, format="PNG")
-    data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+def classify(
+    images: list[Image.Image],
+    candidates: list[str],
+    *,
+    use_confidence: bool = False,  # ⭐ NEW toggle
+    n_votes: int = 5,  # number of self-consistency calls
+) -> dict:
+    """Returns {'doc_type': str} or additionally a 'confidence' field."""
 
-    # System prompt listing the choices
-    system_prompt = f"Choose exactly one document type from: {candidates}. Return only exactly the type name, no other text or explanation."
-    # User content: text + image_url segment
-    user_content = [
-        {"type": "text", "text": system_prompt},
-        {"type": "image_url", "image_url": {"url": data_uri}},
-    ]
+    def _single_vote() -> str:
+        buf = io.BytesIO()
+        images[0].save(buf, format="PNG")
+        data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+        prompt = f"Choose one type from: {candidates}. Return only the type."
+        msgs = [
+            {"role": "system", "content": "You are a doc classifier."},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": data_uri}},
+                ],
+            },
+        ]
+        return get_chat_completion(
+            msgs, model=os.getenv("CLASSIFY_MODEL", DEFAULT_OPENAI_MODEL)
+        ).strip()
 
-    messages = [
-        {"role": "system", "content": "You are a document classification assistant."},
-        {"role": "user", "content": user_content},
-    ]
+    if not use_confidence:
+        return {"doc_type": _single_vote()}
 
-    resp = get_chat_completion(
-        messages, model=os.getenv("CLASSIFY_MODEL", "gpt-4o-mini")
-    )
-
+    votes = [_single_vote() for _ in range(n_votes)]
     try:
-        print(f"LLM response: {resp}")
-        return json.loads(resp)
-    except Exception:
-        logging.warning("Failed to parse classification JSON; returning raw response")
-        return {"doc_type": resp.strip(), "reasoning": resp.strip()}
+        best = mode(votes)
+        confidence = votes.count(best) / n_votes
+    except StatisticsError:  # all votes different
+        best, confidence = votes[0], 1 / n_votes
+
+    return {"doc_type": best, "confidence": confidence}

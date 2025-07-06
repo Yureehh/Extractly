@@ -1,6 +1,4 @@
-import os
 import json
-from glob import glob
 from pathlib import Path
 
 
@@ -10,20 +8,26 @@ class SchemaManager:
     Schemas are JSON files: {"type": [{"name":...,"description":...}, ...]}
     """
 
-    def __init__(self, schema_dir="schemas"):
+    def __init__(self, schema_dir=None):
+        if schema_dir is None:
+            # Use absolute path relative to this file
+            project_root = Path(__file__).parent.parent
+            schema_dir = project_root / "schemas"
         self.schema_dir = schema_dir
         self.schemas = {}
         self._load_schemas()
 
     def _load_schemas(self):
-        for f in glob(os.path.join(self.schema_dir, "*.json")):
-            with open(f, "r", encoding="utf-8") as fp:
-                data = json.load(fp)
-            for doc_type, payload in data.items():
-                # 🔄 if payload is list → wrap in new structure
-                if isinstance(payload, list):
-                    payload = {"description": "", "fields": payload}
-                self.schemas[doc_type] = payload
+        schema_path = Path(self.schema_dir)
+        if schema_path.exists():
+            for f in schema_path.glob("*.json"):
+                with f.open("r", encoding="utf-8") as fp:
+                    data = json.load(fp)
+                for doc_type, payload in data.items():
+                    # 🔄 if payload is list → wrap in new structure
+                    if isinstance(payload, list):
+                        payload = {"description": "", "fields": payload}
+                    self.schemas[doc_type] = payload
 
     def add_custom(self, custom: dict):
         wrapped = {

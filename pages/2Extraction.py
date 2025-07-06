@@ -3,6 +3,7 @@ Batch Extraction – multi-doc classification, OCR, extraction & correction UI.
 """
 
 from __future__ import annotations
+import contextlib
 import io
 import json
 from datetime import datetime, timezone
@@ -11,14 +12,16 @@ from typing import List
 import streamlit as st
 import pandas as pd
 
-from src.preprocess import preprocess
+from src.ocr_engine import run_ocr
+from utils.preprocess import preprocess
 from src.schema_manager import SchemaManager
 from src.classifier import classify
 from src.extractor import extract
-from src.utils import (
+from utils.utils import (
     generate_doc_id,
     load_feedback,
     upsert_feedback,
+    diff_fields,
 )
 
 # ───── page & globals ──────────────────────────────────────────────
@@ -29,10 +32,24 @@ schema_mgr = SchemaManager()
 # ───── sidebar: settings ───────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️  Options")
-    run_ocr = st.checkbox("Run OCR first", value=False)
+    calc_conf = st.checkbox("Compute confidences", value=False)
+    run_ocr_checkbox = st.checkbox("Run OCR first", value=False)
     ocr_engine = st.selectbox(
-        "OCR engine", ["LLM-OCR", "Tesseract"], disabled=not run_ocr
+        "OCR engine", ["LLM-OCR", "Tesseract"], disabled=not run_ocr_checkbox
     )
+
+    # ✂︎────────────────────────  OCR-preview toggle  ──────────────────────✂︎
+    if run_ocr_checkbox and "ocr_map" in st.session_state:
+        with st.sidebar.expander("🔍 Preview raw OCR text", expanded=False):
+            for name, ocr_txt in st.session_state["ocr_map"].items():
+                st.markdown(f"**{name}**")
+                st.text_area(
+                    label=" ",  # blanks out the label bar
+                    value=ocr_txt[:10_000],  # haven’t changed your 10 kB clamp
+                    height=200,
+                    key=f"ocr_{name}",  # unique key per file
+                )
+
 
 # ───── file uploader ────────────────────────────────────────────────
 files = st.file_uploader(
@@ -54,12 +71,8 @@ for r in past:
         corrected_map[r["file_name"]] = r["doc_type"]
         # Check for non-empty corrected metadata to load
         if r.get("metadata_corrected") and r["metadata_corrected"] != "{}":
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 past_metadata_map[r["file_name"]] = json.loads(r["metadata_corrected"])
-            except json.JSONDecodeError:
-                # Gracefully handle if a line in the feedback file is malformed
-                pass
-
 # ───── ensure session state ────────────────────────────────────────
 st.session_state.setdefault("doc_rows", [])
 st.session_state.setdefault("extracted", False)
@@ -79,6 +92,7 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # ───── 1️⃣ on-click: build doc_rows ─────────────────────────────────
 if classify_clicked or seq_clicked:
     st.session_state["extracted"] = False
+    st.session_state["ocr_preview"] = ""
     st.session_state["doc_rows"] = []
     prog = st.progress(0.0, "Classifying…")
 
@@ -88,21 +102,42 @@ if classify_clicked or seq_clicked:
         fname = up.name
         doc_id = generate_doc_id(up) or f"id_{i}"
 
+        ocr_txt = ""
+        if run_ocr_checkbox:
+            ocr_engine_name = "Paddle" if ocr_engine == "LLM-OCR" else "Tesseract"
+            ocr_txt = run_ocr(images, ocr_engine_name)
+
+            # keep a dict keyed by filename
+            st.session_state.setdefault("ocr_map", {})
+            st.session_state["ocr_map"][fname] = ocr_txt
+
+            if (
+                "ocr_preview" in st.session_state
+                and not st.session_state["ocr_preview"]
+            ):
+                st.session_state["ocr_preview"] = ocr_txt
+
         with io.BytesIO() as buf:
             img = images[0].copy()
             img.thumbnail((140, 140))
             img.save(buf, format="PNG")
             thumb = buf.getvalue()
 
+        # ---------- build rows  -------------------------
         if fname in corrected_map:
             doc_type = corrected_map[fname]
+            confidence = None
             reasoning = "retrieved from past correction"
-            detected_type = None
         else:
-            cls = classify(images, schema_mgr.get_types())
-            doc_type = cls["doc_type"]
-            detected_type = cls["doc_type"]
-            reasoning = cls.get("reasoning", "")
+            cls_resp = classify(
+                images,
+                schema_mgr.get_types(),
+                use_confidence=calc_conf,  # existing flag
+                n_votes=5,  # or any number you like
+            )
+            doc_type = cls_resp["doc_type"]
+            confidence = cls_resp.get("confidence")
+            reasoning = cls_resp.get("reasoning", "")
 
         cls_results.append(
             {
@@ -110,11 +145,12 @@ if classify_clicked or seq_clicked:
                 "doc_id": doc_id,
                 "thumb": thumb,
                 "images": images,
-                "detected": detected_type,
+                "detected": doc_type,
                 "final_type": doc_type,
                 "reasoning": reasoning,
                 "fields": None,
                 "fields_corrected": None,
+                "confidence": confidence,
             }
         )
         prog.progress(i / len(files), f"Classifying: {fname}")
@@ -129,7 +165,10 @@ if classify_clicked or seq_clicked:
 if doc_rows and not st.session_state.get("extracted"):
     st.subheader("📑 Review detected document types")
     for idx, row in enumerate(doc_rows):
-        with st.expander(f"{row['file_name']} — {row['final_type']}", expanded=False):
+        with st.expander(
+            f"{row['file_name']} — {row['final_type']}",
+            expanded=st.session_state.get("exp_open", True),
+        ):
             img_col, sel_col = st.columns([1, 2])
             with img_col:
                 st.image(row["thumb"], width=140)
@@ -144,6 +183,9 @@ if doc_rows and not st.session_state.get("extracted"):
                     key=f"type_{row['doc_id']}",
                 )
                 st.session_state["doc_rows"][idx]["final_type"] = sel
+                if calc_conf and row.get("confidence") is not None:
+                    st.caption(f"Original type select: {sel}.")
+                    st.caption(f"Conf ≈ {row['confidence']:.0%}")
     if st.button("💾 Save type corrections"):
         for row in doc_rows:
             upsert_feedback(
@@ -165,10 +207,24 @@ if (extract_clicked or seq_clicked) and not st.session_state.get("extracted"):
 
     for i, row in enumerate(doc_rows, start=1):
         schema = schema_mgr.get(row["final_type"]) or []
-        out = extract(row["images"], schema)
+
+        ocr_txt = None
+        if run_ocr_checkbox:
+            engine_name = "Paddle" if ocr_engine == "LLM-OCR" else "Tesseract"
+            ocr_txt = run_ocr(row["images"], engine_name)
+
+        # # ---------- classification review --------------
+        # if calc_conf and row["confidence"] is not None:
+        #     st.caption(f"🤖 conf ≈ {row['confidence']:.0%}")
+
+        # ---------- run extraction ---------------------
+        out = extract(
+            row["images"], schema, ocr_text=ocr_txt, with_confidence=calc_conf
+        ) or {"metadata": {}, "confidence": {}}  # ← safeguard
 
         # This stores the raw AI extraction result. It will NOT be changed by user edits.
         st.session_state["doc_rows"][i - 1]["fields"] = out["metadata"]
+        st.session_state["doc_rows"][i - 1]["field_conf"] = out.get("confidence", {})
 
         ## CHANGE 2: If we have a past correction for this file, load it. Otherwise, use the new extraction.
         file_name = row["file_name"]
@@ -184,6 +240,8 @@ if (extract_clicked or seq_clicked) and not st.session_state.get("extracted"):
         prog.progress(i / len(doc_rows), f"Extracting from: {row['file_name']}")
 
     st.session_state["extracted"] = True
+    extract_clicked = False  # prevent accidental re-entry on rerun
+    seq_clicked = False
     st.toast("Extraction completed – review below", icon="📦")
     st.rerun()
 
@@ -198,20 +256,23 @@ if st.session_state.get("extracted"):
                 st.warning("No fields were extracted or loaded for this document type.")
                 continue
 
-            ## CHANGE 3: Modify the UI to show a single editable column.
             # Create a DataFrame from 'fields_corrected' for the editable view.
+            row_conf = row.get("field_conf", {})
             df = pd.DataFrame(
                 {
                     "Field": list(row["fields_corrected"].keys()),
                     "Value": list(row["fields_corrected"].values()),
+                    "Conf.": [row_conf.get(k, "") for k in row["fields_corrected"]],
                 }
             )
-
             edited_df = st.data_editor(
                 df,
                 key=f"grid_{row['doc_id']}",
+                disabled=["Field", "Conf."],
                 use_container_width=True,
-                disabled=["Field"],  # Only disable the Field name column
+            )
+            st.session_state["doc_rows"][i]["fields_corrected"] = dict(
+                zip(edited_df.Field, edited_df.Value)
             )
 
             # Convert the edited DataFrame back to a dictionary.
@@ -224,19 +285,21 @@ if st.session_state.get("extracted"):
 
             if st.button("💾 Save this doc", key=f"save_{row['doc_id']}"):
                 current_row = st.session_state["doc_rows"][i]
+                changed = diff_fields(
+                    current_row["fields"], current_row["fields_corrected"]
+                )
                 upsert_feedback(
                     {
                         "doc_id": current_row["doc_id"],
                         "file_name": current_row["file_name"],
                         "doc_type": current_row["final_type"],
-                        # Save the ORIGINAL extraction here
                         "metadata_extracted": json.dumps(
                             current_row["fields"], ensure_ascii=False
                         ),
-                        # Save the FINAL (edited) values here
                         "metadata_corrected": json.dumps(
                             current_row["fields_corrected"], ensure_ascii=False
                         ),
+                        "fields_corrected": changed,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                     }
                 )

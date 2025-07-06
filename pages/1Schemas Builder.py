@@ -6,7 +6,9 @@ from pathlib import Path
 from src.schema_manager import SchemaManager
 
 # ───────────────── constants / init ────────────────────────────────
-DATA_DIR = Path("schemas")
+# Get the project root directory (parent of the pages directory)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_DIR = PROJECT_ROOT / "schemas"
 CUSTOM_JSON = DATA_DIR / "custom_schemas.json"
 DATA_DIR.mkdir(exist_ok=True)
 

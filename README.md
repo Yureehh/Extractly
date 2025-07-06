@@ -8,7 +8,7 @@ A plug-and-play Python framework to classify and extract metadata from PDFs and 
 - **Modular pipeline**: Preprocessing, classification, extraction, validation, export.
 - **Hybrid OCR + LLM**: Tesseract or PDF text layer + GPT-4o-mini (configurable) for robust extraction.
 - **Custom schemas**: Define new document types and field descriptors via JSON in `schemas/` or input in UI.
-- **Configurable models**: Choose between `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`, etc.
+- **Configurable models**: Choose between `gpt-o4-mini`, `gpt-o3`, `gpt-4o`, etc.
 - **Validation & context**: Extracted values accompanied by context snippets and LLM reasoning.
 - **CLI & UI**: Streamlit app and CLI interface for automation and demos.
 - **Caching & metrics**: Preprocess results cached to speed up repeated runs; timings logged per step.
@@ -47,10 +47,10 @@ A plug-and-play Python framework to classify and extract metadata from PDFs and 
 - Swap or fine-tune models via `utils/openai_client.py`.
 
 
-# TODOs:
-- Passare l'ocr del docCorrezione dei
--  metadati estratti + Apprendere dagli errori, salvo le ultime N estrazioni dello stesso tipo di doc (solo errate?) e gliele passo
-- Confidenza estrazioni
-- Aggiustare cards in Home
+# Future Work
+- Improve from errors, saving last N feedbacks for a give doc type (only incorrect ones?) and pass in context
+- Aggiustare cards in Home (feedbacks are cuffed overall)
+- Rivedere la confidence delle estrazioni, la classificazione è ok
+
 - Fare sides fighe in cui dici flusso ed “agenti”
 - Tracciare kpi
