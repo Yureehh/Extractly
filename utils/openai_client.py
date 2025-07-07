@@ -13,7 +13,6 @@ client = OpenAI(api_key=api_key)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("extractor.log"), logging.StreamHandler()],
 )
 
 

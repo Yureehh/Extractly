@@ -50,7 +50,6 @@ A plug-and-play Python framework to classify and extract metadata from PDFs and 
 # Future Work
 - Improve from errors, saving last N feedbacks for a give doc type (only incorrect ones?) and pass in context
 - Aggiustare cards in Home (feedbacks are cuffed overall)
-- Rivedere la confidence delle estrazioni, la classificazione è ok
 
 - Fare sides fighe in cui dici flusso ed “agenti”
 - Tracciare kpi

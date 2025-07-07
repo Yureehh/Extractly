@@ -44,10 +44,11 @@ with st.sidebar:
             for name, ocr_txt in st.session_state["ocr_map"].items():
                 st.markdown(f"**{name}**")
                 st.text_area(
-                    label=" ",  # blanks out the label bar
+                    label=" ",  # blanks out
                     value=ocr_txt[:10_000],  # haven’t changed your 10 kB clamp
                     height=200,
                     key=f"ocr_{name}",  # unique key per file
+                    label_visibility="collapsed",
                 )
 
 
@@ -86,7 +87,6 @@ extract_clicked = c3.button(
     "⚡ Extract All", disabled=not doc_rows, use_container_width=True
 )
 
-st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 st.markdown("<hr>", unsafe_allow_html=True)
 
 # ───── 1️⃣ on-click: build doc_rows ─────────────────────────────────
@@ -199,6 +199,8 @@ if doc_rows and not st.session_state.get("extracted"):
                 }
             )
         st.toast("Document types saved 👍", icon="💾")
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ───── 3️⃣ ON-CLICK: run extraction ────────────────────────────────
 if (extract_clicked or seq_clicked) and not st.session_state.get("extracted"):
