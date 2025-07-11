@@ -1,0 +1,145 @@
+{
+  "AccidentReport": [
+    {
+      "name": "Date of Incident",
+      "description": "Calendar date when the accident happened."
+    },
+    {
+      "name": "Location",
+      "description": "City or road where the collision occurred."
+    },
+    {
+      "name": "Injuries Present",
+      "description": "Yes/No flag for personal injuries."
+    },
+    {
+      "name": "External Property Damage",
+      "description": "Yes/No flag for third-party damage."
+    },
+    {
+      "name": "Vehicle A – Owner",
+      "description": "Surname and name of insured party A."
+    },
+    {
+      "name": "Vehicle A – Registration",
+      "description": "Plate number of vehicle A."
+    },
+    {
+      "name": "Vehicle B – Owner",
+      "description": "Surname and name of insured party B."
+    },
+    {
+      "name": "Vehicle B – Registration",
+      "description": "Plate number of vehicle B."
+    },
+    {
+      "name": "Witnesses",
+      "description": "Comma-separated list of any witnesses."
+    },
+    {
+      "name": "Circumstances",
+      "description": "Tick-box numbers or free-text notes."
+    },
+    {
+      "name": "Sketch (Base64 PNG)",
+      "description": "Accident diagram encoded as base64 PNG."
+    },
+    { "name": "Signatures", "description": "Signatures of both drivers." }
+  ],
+
+  "BirthCertificate": [
+    {
+      "name": "Municipality",
+      "description": "Comune that issued the certificate."
+    },
+    { "name": "Province", "description": "Province (e.g., Palermo)." },
+    { "name": "Given Names", "description": "Child’s given name(s)." },
+    { "name": "Family Names", "description": "Child’s family name(s)." },
+    { "name": "Birth Date", "description": "Day-Month-Year of birth." },
+    { "name": "Birth Place", "description": "Town/city where birth occurred." },
+    { "name": "Father’s Name", "description": "Father’s full name." },
+    { "name": "Mother’s Name", "description": "Mother’s full name." },
+    {
+      "name": "Registry Record Nº",
+      "description": "Entry number in the civil register."
+    },
+    {
+      "name": "Part / Series",
+      "description": "Register partition and series (if present)."
+    },
+    { "name": "Issue Date", "description": "Date the certificate was issued." },
+    {
+      "name": "Registrar Name",
+      "description": "Official who signed the document."
+    }
+  ],
+  "DeliveryNote": [
+    {
+      "name": "Document Type",
+      "description": "Italian 'Documento di Trasporto' (DDT)."
+    },
+    { "name": "Document Date", "description": "Date the DDT was issued." },
+    {
+      "name": "Document Number",
+      "description": "Sequential number printed on the DDT."
+    },
+    {
+      "name": "Supplier Name",
+      "description": "Company that issued the goods (mittente)."
+    },
+    {
+      "name": "Supplier VAT Nº",
+      "description": "Supplier’s VAT / Codice Fiscale."
+    },
+    {
+      "name": "Customer Name",
+      "description": "Recipient company (destinatario)."
+    },
+    {
+      "name": "Customer Address",
+      "description": "Street, city, ZIP of the recipient."
+    },
+    {
+      "name": "Transport Reason",
+      "description": "Causale del trasporto (e.g., Vendita, Reso)."
+    },
+    {
+      "name": "Carrier Name",
+      "description": "Name of carrier or driver (vettore)."
+    },
+    {
+      "name": "Items Table",
+      "description": "List of codes, descriptions, qty, price."
+    },
+    {
+      "name": "Total Amount",
+      "description": "Total document amount incl. VAT."
+    },
+    { "name": "Issue Place", "description": "City where the DDT was issued." },
+    { "name": "Signature", "description": "Signature of carrier or recipient." }
+  ],
+  "Passport": [
+    {
+      "name": "Passport Number",
+      "description": "Alphanumeric passport identifier."
+    },
+    { "name": "Full Name", "description": "Holder’s full legal name." },
+    { "name": "Nationality", "description": "Country of citizenship." },
+    { "name": "Date of Birth", "description": "Day-Month-Year of birth." },
+    { "name": "Place of Birth", "description": "City / country of birth." },
+    { "name": "Date of Issue", "description": "Passport issuance date." },
+    { "name": "Date of Expiry", "description": "Passport expiration date." },
+    {
+      "name": "Issuing Authority",
+      "description": "Agency or office that issued the passport."
+    },
+    {
+      "name": "MRZ",
+      "description": "Machine-Readable Zone (two lines at bottom)."
+    },
+    {
+      "name": "Holder Photograph",
+      "description": "Face photo printed in the passport."
+    }
+  ]
+}
