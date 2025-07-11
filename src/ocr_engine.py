@@ -14,7 +14,9 @@ import pytesseract
 from openai import OpenAI
 from utils.utils import DEFAULT_OPENAI_MODEL
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = (
+    r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+)
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     logging.error("OPENAI_API_KEY not found in env")

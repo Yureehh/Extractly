@@ -18,7 +18,6 @@ TEXT_COLOR = "#e2e8f0"  # soft white
 st.set_page_config("Extractly", page_icon="🪄", layout="wide")
 
 
-
 # ── one-time CSS injection (avoid duplicates on rerun)
 if "home_css" not in st.session_state:
     st.markdown(
