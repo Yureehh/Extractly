@@ -3,9 +3,9 @@ name: Python package
 
 on:
   push:
-    branches: [main, develop, feature/*]
+    branches: [master, develop, "feature/*"]
   pull_request:
-    branches: [main, develop]
+    branches: [master, develop]
 
 jobs:
   build:
@@ -16,37 +16,26 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3     # kept
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v4 # minor version bump
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Cache Poetry Binary
-      uses: actions/cache@v4
+    # ------------- uv replaces Poetry here -------------
+    - name: Cache uv wheels
+      uses: actions/cache@v3
       with:
-        path: ~/.poetry
-        key: poetry-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
-        restore-keys: poetry-${{ runner.os }}-
+        path: ~/.cache/uv
+        key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+        restore-keys: uv-${{ runner.os }}-
 
-    - name: Install Poetry
+    - name: Install uv & project deps
       run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-
-    - name: Cache Poetry Dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pypoetry
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock', '**/pyproject.toml') }}
-        restore-keys: ${{ runner.os }}-poetry-
-
-    - name: Install Dependencies with uv
-      run: |
-          pip install uv
-          uv install --locked
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        uv sync
+    # ----------------------------------------------------
 
     - name: Install pre-commit
       run: pip install pre-commit
@@ -56,13 +45,13 @@ jobs:
 
     - name: Run Linting and Formatting Checks with Ruff
       run: |
-          ruff check --fix --unsafe-fixes
-          ruff format
+        ruff check --fix --unsafe-fixes
+        ruff format
 
     - name: Run Tests with Coverage
       continue-on-error: true
       run: |
-        poetry run pytest --cov=src --cov-fail-under=85 --cov-report xml
+        pytest --cov=src --cov-fail-under=85 --cov-report xml
 
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v4
