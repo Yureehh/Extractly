@@ -1,0 +1,23 @@
+# .streamlit/config.toml
+# ------------------------------------------------------------------
+# Streamlit configuration tuned for the “Batch Extraction” app
+# ------------------------------------------------------------------
+
+[server]
+# Run inside VS Code / remote containers without extra flags
+headless          = true
+enableCORS        = false
+enableXsrfProtection = false
+# Use the fast watchdog-based reloader but ignore pycache artifacts
+fileWatcherType   = "watchdog"
+folderWatchBlacklist = [
+  "__pycache__/*",      # prevents FileNotFoundError races
+  ".git/*",             # ignore git internals
+  ".venv/*",            # ignore your virtual-env
+  "node_modules/*",     # ignore JS deps if any
+]
+
+[client]
+# Hide “Deploy” button etc. – cleaner UI for end-users
+toolbarMode       = "minimal"
+showErrorDetails  = true            # set false in production

@@ -28,3 +28,6 @@ dev = [
     "pytest-cov>=6.1.1",
     "ruff>=0.11.10",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}   # tells setuptools that code lives in /src

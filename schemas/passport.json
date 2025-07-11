@@ -1,0 +1,27 @@
+{
+  "Passport": {
+    "description": "International passport: government-issued travel document verifying identity and nationality.",
+    "fields": [
+      {
+        "name": "Passport Number",
+        "description": "Unique passport ID (alphanumeric code)"
+      },
+      {
+        "name": "Full Name",
+        "description": "Surname and given names as shown"
+      },
+      { "name": "Nationality", "description": "Country of citizenship" },
+      {
+        "name": "Date of Birth",
+        "description": "Holder’s birth date (YYYY-MM-DD)"
+      },
+      { "name": "Place of Birth", "description": "City & country of birth" },
+      { "name": "Date of Issue", "description": "Passport issue date" },
+      { "name": "Date of Expiry", "description": "Passport expiry date" },
+      {
+        "name": "Issuing Country",
+        "description": "Country / authority that issued the document"
+      }
+    ]
+  }
+}

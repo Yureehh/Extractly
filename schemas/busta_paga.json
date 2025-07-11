@@ -1,0 +1,21 @@
+{
+  "Busta paga": {
+    "description": "Cedolino paga: riepilogo mensile delle retribuzioni, trattenute e dati anagrafici del dipendente.",
+    "fields": [
+      { "name": "Dipendente", "description": "Nome e cognome dipendente" },
+      { "name": "Periodo", "description": "Mese/anno di competenza" },
+      { "name": "Matricola", "description": "ID interno o codice fiscale" },
+      {
+        "name": "Retribuzione lorda",
+        "description": "Salario lordo del periodo"
+      },
+      { "name": "Trattenute", "description": "Totale contributi e imposte" },
+      {
+        "name": "Retribuzione netta",
+        "description": "Importo netto corrisposto"
+      },
+      { "name": "IBAN", "description": "Conto di accredito" },
+      { "name": "Data pagamento", "description": "Data effettivo pagamento" }
+    ]
+  }
+}
