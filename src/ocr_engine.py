@@ -4,7 +4,6 @@ A super-thin wrapper so you can swap engines without touching the rest of the ap
 """
 
 from __future__ import annotations
-from typing import List
 from PIL import Image
 import io
 import base64
@@ -71,7 +70,7 @@ _ENGINE_MAP = {
 }
 
 
-def run_ocr(pages: List[Image.Image], engine: str = "tesseract") -> str:
+def run_ocr(pages: list[Image.Image], engine: str = "tesseract") -> str:
     """
     Concatenate OCR text from **all** pages with double newlines.
     `engine` may be 'tesseract' or 'llm-ocr' (case-insensitive).

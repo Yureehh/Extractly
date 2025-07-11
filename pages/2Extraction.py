@@ -7,7 +7,6 @@ import contextlib
 import io
 import json
 from datetime import datetime, timezone
-from typing import List
 
 import streamlit as st
 import pandas as pd
@@ -91,7 +90,7 @@ for r in past:
 # ───── ensure session state ────────────────────────────────────────
 st.session_state.setdefault("doc_rows", [])
 st.session_state.setdefault("extracted", False)
-doc_rows: List[dict] = st.session_state["doc_rows"]
+doc_rows: list[dict] = st.session_state["doc_rows"]
 
 # ───── run buttons ─────────────────────────────────────────────────
 c1, c2, c3 = st.columns(3)
