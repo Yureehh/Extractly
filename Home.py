@@ -100,8 +100,9 @@ for r in feedback:
 
         # Count high confidence extractions
         if r.get("metadata_extracted"):
-            non_empty_fields = sum(bool(v and str(v).strip())
-                               for v in r["metadata_extracted"].values())
+            non_empty_fields = sum(
+                bool(v and str(v).strip()) for v in r["metadata_extracted"].values()
+            )
             total_fields = len(r["metadata_extracted"])
             if total_fields > 0 and (non_empty_fields / total_fields) >= 0.7:
                 high_confidence_docs += 1

@@ -42,7 +42,6 @@ img:hover { transform:scale(2.5); transition:0.15s ease-in-out;
 with st.sidebar:
     st.header("⚙️  Options")
     calc_conf = st.checkbox("Compute confidences", value=False)
-    # NEW: Confidence threshold setting
     conf_threshold = st.slider(
         "Confidence threshold (%)",
         0,
@@ -58,6 +57,46 @@ with st.sidebar:
         disabled=not run_ocr_checkbox,
         key="sel_engine",
     )
+
+    # NEW: System Prompts Section
+    st.header("🤖 System Prompts")
+
+    # Default prompts
+    DEFAULT_CLASSIFIER_PROMPT = "You are a document classifier."
+    DEFAULT_EXTRACTOR_PROMPT = "You are a metadata-extraction assistant.\nReturn only JSON with keys metadata, snippets, confidence."
+
+    with st.expander("📝 Edit Prompts", expanded=False):
+        st.subheader("Classification Prompt")
+        classifier_prompt = st.text_area(
+            "System prompt for document classification:",
+            value=st.session_state.get("classifier_prompt", DEFAULT_CLASSIFIER_PROMPT),
+            height=100,
+            help="This prompt guides how the AI classifies document types",
+            key="classifier_prompt_input",
+        )
+
+        st.subheader("Extraction Prompt")
+        extractor_prompt = st.text_area(
+            "System prompt for metadata extraction:",
+            value=st.session_state.get("extractor_prompt", DEFAULT_EXTRACTOR_PROMPT),
+            height=150,
+            help="This prompt guides how the AI extracts metadata fields",
+            key="extractor_prompt_input",
+        )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Save Prompts"):
+                st.session_state["classifier_prompt"] = classifier_prompt
+                st.session_state["extractor_prompt"] = extractor_prompt
+                st.success("Prompts saved!")
+
+        with col2:
+            if st.button("🔄 Reset to Default"):
+                st.session_state["classifier_prompt"] = DEFAULT_CLASSIFIER_PROMPT
+                st.session_state["extractor_prompt"] = DEFAULT_EXTRACTOR_PROMPT
+                st.rerun()
+
     # ✂︎────────────────────────  OCR-preview toggle  ──────────────────────✂︎
     if run_ocr_checkbox and "ocr_map" in st.session_state:
         with st.sidebar.expander("🔍 Preview raw OCR text", expanded=False):
@@ -156,9 +195,12 @@ if classify_clicked or seq_clicked:
         else:
             cls_resp = classify(
                 images,
-                classification_candidates,  # CHANGE: Use enhanced candidates
+                classification_candidates,
                 use_confidence=calc_conf,
                 n_votes=5,
+                system_prompt=st.session_state.get(
+                    "classifier_prompt"
+                ),  # Add this line
             )
             doc_type = cls_resp["doc_type"]
             confidence = cls_resp.get("confidence")
@@ -294,7 +336,11 @@ if (extract_clicked or seq_clicked) and not st.session_state.get("extracted"):
             ocr_txt = run_ocr(row["images"], engine_name)
 
         out = extract(
-            row["images"], schema, ocr_text=ocr_txt, with_confidence=calc_conf
+            row["images"],
+            schema,
+            ocr_text=ocr_txt,
+            with_confidence=calc_conf,
+            system_prompt=st.session_state.get("extractor_prompt"),  # Add this line
         ) or {"metadata": {}, "confidence": {}}
 
         if not any(out["metadata"].values()):
@@ -393,6 +439,9 @@ if st.session_state.get("extracted"):
                         schema,
                         ocr_text=ocr_txt,
                         with_confidence=calc_conf,
+                        system_prompt=st.session_state.get(
+                            "extractor_prompt"
+                        ),  # Add this line
                     ) or {"metadata": {}, "confidence": {}}
 
                     row["fields"] = new_out["metadata"]

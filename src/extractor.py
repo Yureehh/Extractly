@@ -13,7 +13,7 @@ from utils.confidence_utils import score_confidence
 
 
 def _truncate(txt: str, max_chars: int = 64_000) -> str:
-    """Guard-rail so we don’t blow up the context window with huge OCR dumps."""
+    """Guard-rail so we don't blow up the context window with huge OCR dumps."""
     return txt[:max_chars]
 
 
@@ -21,8 +21,9 @@ def extract(
     images: List[Image.Image],
     schema: List[Dict],
     ocr_text: Mapping[str, str] | None = None,
-    *,  # keyword-only “tuning” flags
+    *,  # keyword-only "tuning" flags
     with_confidence: bool = False,
+    system_prompt: str | None = None,  # NEW: Allow custom system prompt
 ) -> Dict:
     """
     Return a dict with exactly three top-level keys:
@@ -39,10 +40,15 @@ def extract(
     images[0].save(buf, format="PNG")
     data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
 
-    system_prompt = (
-        "You are a metadata-extraction assistant.\n"
-        f"Return only JSON with keys metadata, snippets, confidence and exactly: {field_names}"
-    )
+    # NEW: Use custom system prompt if provided, otherwise use default
+    if system_prompt is None:
+        system_prompt = (
+            "You are a metadata-extraction assistant.\n"
+            f"Return only JSON with keys metadata, snippets, confidence and exactly: {field_names}"
+        )
+    else:
+        # Ensure field names are included in custom prompt
+        system_prompt = f"{system_prompt}\n\nRequired fields: {field_names}"
 
     usr = [
         {"type": "image_url", "image_url": {"url": data_uri}},
