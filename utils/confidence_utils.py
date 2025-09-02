@@ -1,3 +1,5 @@
+# utils/confidence_utils.py
+
 import os
 import io
 import base64
@@ -64,24 +66,73 @@ def llm_judge_scores(
         [{"role": "system", "content": sys}, {"role": "user", "content": usr}],
         model=(model or os.getenv("VERIFY_MODEL", DEFAULT_OPENAI_MODEL)),
     )
-    print(rsp)
 
     with contextlib.suppress(Exception):
         judged = json.loads(rsp)
         if isinstance(judged, dict):
             # coerce to float, clamp to [0,1]
-            return {k: float(max(0.0, min(1.0, float(v)))) for k, v in judged.items()}
+            return {
+                k: float(max(0.0, min(1.0, float(v) / 100.0)))
+                for k, v in judged.items()
+            }
     return {name: 0.5 for name in fields_to_judge}  # neutral fallback
+
+
+def heuristic_confidence_score(metadata: dict, schema: list[dict]) -> dict:
+    """
+    Heuristic confidence scoring for extracted metadata (fallback method).
+    Returns a dict with field names as keys and confidence scores (0-1) as values.
+    """
+    confidence_scores = {}
+
+    for field in schema:
+        field_name = field["name"]
+        value = metadata.get(field_name)
+
+        if value is None or value == "" or value == "null":
+            confidence_scores[field_name] = 0.0
+        elif isinstance(value, str):
+            if len(value.strip()) == 0:
+                confidence_scores[field_name] = 0.0
+            elif len(value.strip()) < 3:
+                confidence_scores[field_name] = 0.3
+            elif len(value.strip()) < 10:
+                confidence_scores[field_name] = 0.6
+            else:
+                # Check for patterns that suggest good extraction
+                has_numbers = any(c.isdigit() for c in value)
+                has_letters = any(c.isalpha() for c in value)
+                has_structure = any(c in value for c in ["-", "/", ".", "@"])
+
+                base_confidence = 0.7
+                if has_numbers and has_letters:
+                    base_confidence += 0.1
+                if has_structure:
+                    base_confidence += 0.1
+
+                confidence_scores[field_name] = min(base_confidence, 1.0)
+        else:
+            confidence_scores[field_name] = 0.9
+
+    return confidence_scores
 
 
 def score_confidence(
     meta: Dict[str, str | None],
     schema: List[Dict],
+    use_llm: bool = True,
 ) -> Dict[str, float]:
     """
-    Ask the LLM to score every field directly.
-    If the LLM reply cannot be parsed, fall back to 0.50 for that field.
-    N.B: we could use majority_vote() here, but it’s more complex and costly to reach sufficient confidence.
+    Score confidence for extracted metadata fields.
+
+    Parameters
+    ----------
+    meta : Dict[str, str | None]
+        Extracted metadata
+    schema : List[Dict]
+        Schema definition
+    use_llm : bool
+        Whether to use LLM-based scoring (default) or heuristic fallback
 
     Returns
     -------
@@ -91,6 +142,9 @@ def score_confidence(
     # Build a dict with **all** fields the caller expects
     to_judge: Dict[str, str | None] = {f["name"]: meta.get(f["name"]) for f in schema}
 
+    if not use_llm:
+        return heuristic_confidence_score(meta, schema)
+
     # Find the PIL image already in the call-stack (extract() passes it)
     from inspect import currentframe, getouterframes
 
@@ -99,9 +153,14 @@ def score_confidence(
         if images := frame.frame.f_locals.get("images"):
             image = images[0]
             break
-    if image is None:  # extremely unlikely, but guard anyway
-        return {k: 0.50 for k in to_judge}  # neutral confidence
 
-    judged = llm_judge_scores(image, to_judge)  # ← single call to the judge
-    # Ensure every key is present, default 0.50
-    return {k: judged.get(k, 0.50) for k in to_judge}
+    if image is None:  # fallback to heuristic if no image found
+        return heuristic_confidence_score(meta, schema)
+
+    try:
+        judged = llm_judge_scores(image, to_judge)  # ← single call to the judge
+        heuristic_scores = heuristic_confidence_score(meta, schema)
+        return {k: judged.get(k, heuristic_scores.get(k, 0.50)) for k in to_judge}
+    except Exception:
+        # Fallback to heuristic scoring if LLM fails
+        return heuristic_confidence_score(meta, schema)
