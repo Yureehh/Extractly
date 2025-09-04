@@ -17,6 +17,7 @@ from utils.preprocess import preprocess
 from src.schema_manager import SchemaManager
 from src.classifier import classify
 from src.extractor import extract
+from utils.ui_components import inject_logo, inject_common_styles
 from utils.utils import (
     generate_doc_id,
     load_feedback,
@@ -28,6 +29,10 @@ from utils.utils import (
 st.set_page_config("Extraction", page_icon="🔍", layout="wide")
 st.title("🔍 Extraction")
 schema_mgr = SchemaManager()
+
+# Inject logo and common styles
+inject_logo("data/assets/data_reply.svg", height="80px")  # Adjust height as needed
+inject_common_styles()
 
 # ───── sidebar: settings ───────────────────────────────────────────
 with st.sidebar:
@@ -81,11 +86,9 @@ doc_rows: List[dict] = st.session_state["doc_rows"]
 
 # ───── run buttons ─────────────────────────────────────────────────
 c1, c2, c3 = st.columns(3)
-seq_clicked = c1.button("🚀 Classify & Extract", use_container_width=True)
-classify_clicked = c2.button("▶️ Classify Only", use_container_width=True)
-extract_clicked = c3.button(
-    "⚡ Extract All", disabled=not doc_rows, use_container_width=True
-)
+seq_clicked = c1.button("🚀 Classify & Extract", width="stretch")
+classify_clicked = c2.button("▶️ Classify Only", width="stretch")
+extract_clicked = c3.button("⚡ Extract All", disabled=not doc_rows, width="stretch")
 
 st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -271,7 +274,7 @@ if st.session_state.get("extracted"):
                 df,
                 key=f"grid_{row['doc_id']}",
                 disabled=["Field", "Conf."],
-                use_container_width=True,
+                width="stretch",
             )
             st.session_state["doc_rows"][i]["fields_corrected"] = dict(
                 zip(edited_df.Field, edited_df.Value)
@@ -307,7 +310,7 @@ if st.session_state.get("extracted"):
                 )
                 st.toast(f"Saved {current_row['file_name']}", icon="💾")
 
-    if st.button("💾 Save all corrections", use_container_width=True, type="primary"):
+    if st.button("💾 Save all corrections", width="stretch", type="primary"):
         for row in st.session_state["doc_rows"]:
             upsert_feedback(
                 {

@@ -4,6 +4,7 @@ import streamlit as st
 import json
 from pathlib import Path
 from src.schema_manager import SchemaManager
+from utils.ui_components import inject_logo, inject_common_styles
 
 # ───────────────── constants / init ────────────────────────────────
 # Get the project root directory (parent of the pages directory)
@@ -34,6 +35,10 @@ if st.session_state.reset_now:
 # ───────────────── page meta ───────────────────────────────────────
 st.set_page_config("Schema Builder", "🧬", layout="wide")
 st.title("🧬 Schema Builder")
+
+# Inject logo and common styles
+inject_logo("data/assets/data_reply.svg", height="80px")  # Adjust height as needed
+inject_common_styles()
 
 # ───────────────── sidebar: schema list & actions ──────────────────
 with st.sidebar:
@@ -158,7 +163,7 @@ schema_desc = st.text_area(
 raw_table = st.data_editor(
     st.session_state.field_data,  # static snapshot
     num_rows="dynamic",
-    use_container_width=True,
+    width="stretch",
     key="field_editor",
 )
 
