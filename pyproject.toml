@@ -12,6 +12,7 @@ dependencies = [
     "pymupdf>=1.25.5",
     "pytesseract>=0.3.13",
     "python-dotenv>=1.1.0",
+    "ruff>=0.12.3",
     "streamlit>=1.45.1",
     "tesseract>=0.1.3",
 ]

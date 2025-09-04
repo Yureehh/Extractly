@@ -6,11 +6,16 @@ from datetime import datetime, timezone
 import streamlit as st
 from utils.utils import load_feedback
 from dotenv import load_dotenv
+from utils.ui_components import inject_logo, inject_common_styles
 
 # Load API key from .env
 load_dotenv(override=True)
 
 st.set_page_config("Extractly", page_icon="🪄", layout="wide")
+
+# Inject logo and common styles
+inject_logo("data/assets/data_reply.svg", height="80px")  # Adjust height as needed
+inject_common_styles()
 
 # Theme-adaptive CSS using Streamlit's CSS variables
 if "home_css" not in st.session_state:

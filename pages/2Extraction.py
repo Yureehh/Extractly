@@ -15,6 +15,7 @@ from utils.preprocess import preprocess
 from src.schema_manager import SchemaManager
 from src.classifier import classify
 from src.extractor import extract
+from utils.ui_components import inject_logo, inject_common_styles
 from utils.utils import (
     generate_doc_id,
     load_feedback,
@@ -26,6 +27,9 @@ from utils.utils import (
 st.set_page_config("Extraction", page_icon="🔍", layout="wide")
 st.title("🔍 Extraction")
 schema_mgr = SchemaManager()
+
+inject_logo("data/assets/data_reply.svg", height="80px")  # Adjust height as needed
+inject_common_styles()
 
 # ───── CSS for image hover zoom ────────────────────────────────────
 st.markdown(
