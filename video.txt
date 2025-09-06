@@ -1,0 +1,5 @@
+- Partire con template vuoti nel video ?
+- Avere uno Scontrino / Fattura sintetica
+- Metto CAI / Fattura / X  (quella non in questione la precarico)
+- ggiungo quello nuovo che sara' quello del documento che carico.
+- Lancio classificazione e poi estraggo

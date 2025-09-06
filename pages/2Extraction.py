@@ -45,6 +45,7 @@ img:hover { transform:scale(2.5); transition:0.15s ease-in-out;
 # ───── sidebar: settings ───────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️  Options")
+    run_ocr_checkbox = st.checkbox("Run OCR first", value=False)
     calc_conf = st.checkbox("Compute confidences", value=False)
     conf_threshold = st.slider(
         "Confidence threshold (%)",
@@ -54,7 +55,6 @@ with st.sidebar:
         help="Documents below this confidence will be flagged",
     )
 
-    run_ocr_checkbox = st.checkbox("Run OCR first", value=False)
     ocr_engine = st.selectbox(
         "OCR engine",
         ["LLM-OCR", "Tesseract"],

@@ -5,7 +5,7 @@ A plug-and-play Python framework to classify and extract metadata from PDFs and 
 
 ## Features
 - **Modular pipeline**: Preprocessing, classification, extraction, validation, export.
-- **Hybrid OCR + LLM**: Tesseract or PDF text layer + GPT-4o-mini (configurable) for robust extraction.
+- **Hybrid OCR + LLM**: LLM (configurable) for robust extraction.
 - **Custom schemas**: Define new document types and field descriptors via JSON in `schemas/` or input in UI.
 - **Configurable models**: Choose between `gpt-o4-mini`, `gpt-o3`, `gpt-4o`, etc.
 - **Validation & context**: Extracted values accompanied by context snippets and LLM reasoning.

@@ -13,9 +13,9 @@ def classify(
     images: list[Image.Image],
     candidates: list[str],
     *,
-    use_confidence: bool = False,  # ⭐ NEW toggle
+    use_confidence: bool = False,
     n_votes: int = 5,  # number of self-consistency calls
-    system_prompt: str | None = None,  # NEW: Allow custom system prompt
+    system_prompt: str = "",
 ) -> dict:
     """Returns {'doc_type': str} or additionally a 'confidence' field."""
 
@@ -24,15 +24,9 @@ def classify(
         images[0].save(buf, format="PNG")
         data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
 
-        # NEW: Use custom system prompt if provided
-        if system_prompt is None:
-            sys_content = "You are a document classifier."
-        else:
-            sys_content = system_prompt
-
         prompt = f"Choose one type from: {candidates}. Return only the type."
         msgs = [
-            {"role": "system", "content": sys_content},
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": [

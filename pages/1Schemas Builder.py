@@ -24,6 +24,7 @@ st.session_state.setdefault("editing_doc", None)
 st.session_state.setdefault("field_data", [{"name": "", "description": ""}])
 st.session_state.setdefault("rename_open", False)
 st.session_state.setdefault("reset_now", False)
+st.session_state.setdefault("schema_saved", False)  # New flag for handling save refresh
 
 # ───────────────── handle one-shot reset flag BEFORE widgets ───────
 if st.session_state.reset_now:
@@ -32,6 +33,14 @@ if st.session_state.reset_now:
     st.session_state.field_data = [{"name": "", "description": ""}]
     st.session_state.reset_now = False  # consume flag
 
+# ───────────────── handle schema save refresh ─────────────────────
+if st.session_state.schema_saved:
+    st.session_state.schema_saved = False  # consume flag
+    st.session_state.pop("doc_name_input", None)  # clear text box value
+    st.session_state.pop("field_editor", None)  # clear data editor
+    st.session_state.editing_doc = None
+    st.session_state.field_data = [{"name": "", "description": ""}]
+    st.rerun()  # This will refresh the page and update the sidebar
 # ───────────────── page meta ───────────────────────────────────────
 st.set_page_config("Schema Builder", "🧬", layout="wide")
 st.title("🧬 Schema Builder")
@@ -174,8 +183,10 @@ table_rows = (
 )
 table_rows = [
     {
-        "name": r.get("name", " ").strip(),
-        "description": r.get("description", r.get("description ", " ")).strip(),
+        "name": r.get("name", " ").strip() if r.get("name", " ") else "",
+        "description": r.get("description", r.get("description ", " ")).strip()
+        if r.get("description", r.get("description ", " "))
+        else "",
     }
     for r in table_rows
 ]
@@ -196,10 +207,11 @@ with col_save:
             CUSTOM_JSON.write_text(
                 json.dumps(custom_data, indent=2, ensure_ascii=False)
             )
-            st.success(f"Saved {len(clean)} fields for “{doc_name}”.")
-            st.session_state.field_data = clean
-            st.session_state.editing_doc = doc_name
-
+            st.success(f"Saved {len(clean)} fields for '{doc_name}'.")
+            # Set the flag to trigger page refresh and cleanup
+            st.session_state.schema_saved = True
+            # Trigger immediate rerun to refresh the page
+            st.rerun()
 with col_reset:
     if st.button("↺ Reset"):
         st.session_state.reset_now = True

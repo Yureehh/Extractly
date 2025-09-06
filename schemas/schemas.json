@@ -1,134 +1,129 @@
 {
-  "AccidentReport": [
-    {
-      "name": "Date of Incident",
-      "description": "Calendar date when the accident happened."
-    },
-    {
-      "name": "Location",
-      "description": "City or road where the collision occurred."
-    },
-    {
-      "name": "Injuries Present",
-      "description": "Yes/No flag for personal injuries."
-    },
-    {
-      "name": "External Property Damage",
-      "description": "Yes/No flag for third-party damage."
-    },
-    {
-      "name": "Vehicle A – Owner",
-      "description": "Surname and name of insured party A."
-    },
-    {
-      "name": "Vehicle A – Registration",
-      "description": "Plate number of vehicle A."
-    },
-    {
-      "name": "Vehicle B – Owner",
-      "description": "Surname and name of insured party B."
-    },
-    {
-      "name": "Vehicle B – Registration",
-      "description": "Plate number of vehicle B."
-    },
-    {
-      "name": "Witnesses",
-      "description": "Comma-separated list of any witnesses."
-    },
-    {
-      "name": "Circumstances",
-      "description": "Tick-box numbers or free-text notes."
-    },
-    {
-      "name": "Sketch (Base64 PNG)",
-      "description": "Accident diagram encoded as base64 PNG."
-    },
-    { "name": "Signatures", "description": "Signatures of both drivers." }
-  ],
-
   "BirthCertificate": [
-    {
-      "name": "Municipality",
-      "description": "Comune that issued the certificate."
-    },
-    { "name": "Province", "description": "Province (e.g., Palermo)." },
-    { "name": "Given Names", "description": "Child’s given name(s)." },
-    { "name": "Family Names", "description": "Child’s family name(s)." },
     { "name": "Birth Date", "description": "Day-Month-Year of birth." },
     { "name": "Birth Place", "description": "Town/city where birth occurred." },
-    { "name": "Father’s Name", "description": "Father’s full name." },
-    { "name": "Mother’s Name", "description": "Mother’s full name." },
+    { "name": "Family Names", "description": "Child's family name(s)." },
+    { "name": "Father's Name", "description": "Father's full name." },
+    { "name": "Given Names", "description": "Child's given name(s)." },
+    { "name": "Issue Date", "description": "Date the certificate was issued." },
+    { "name": "Mother's Name", "description": "Mother's full name." },
     {
-      "name": "Registry Record Nº",
-      "description": "Entry number in the civil register."
+      "name": "Municipality",
+      "description": "Municipality that issued the certificate."
     },
     {
       "name": "Part / Series",
       "description": "Register partition and series (if present)."
     },
-    { "name": "Issue Date", "description": "Date the certificate was issued." },
+    { "name": "Province", "description": "Province (e.g., Palermo)." },
     {
       "name": "Registrar Name",
       "description": "Official who signed the document."
+    },
+    {
+      "name": "Registry Record Nº",
+      "description": "Entry number in the civil register."
     }
   ],
+  "CAI": {
+    "description": "Friendly Traffic Accident Report: form to declare the details of a road accident between two vehicles.",
+    "fields": [
+      { "name": "Accident Date", "description": "Date of the accident" },
+      {
+        "name": "Accident Time",
+        "description": "Time when the accident occurred"
+      },
+      {
+        "name": "Driver A",
+        "description": "First and last name of vehicle A driver"
+      },
+      {
+        "name": "Driver B",
+        "description": "First and last name of vehicle B driver"
+      },
+      {
+        "name": "Event Description",
+        "description": "Summary of accident dynamics"
+      },
+      { "name": "Location", "description": "Address / km / intersection" },
+      {
+        "name": "Vehicle A License Plate",
+        "description": "License plate number of vehicle A"
+      },
+      {
+        "name": "Vehicle B License Plate",
+        "description": "License plate number of vehicle B"
+      }
+    ]
+  },
   "DeliveryNote": [
-    {
-      "name": "Document Type",
-      "description": "Italian 'Documento di Trasporto' (DDT)."
-    },
-    { "name": "Document Date", "description": "Date the DDT was issued." },
-    {
-      "name": "Document Number",
-      "description": "Sequential number printed on the DDT."
-    },
-    {
-      "name": "Supplier Name",
-      "description": "Company that issued the goods (mittente)."
-    },
-    {
-      "name": "Supplier VAT Nº",
-      "description": "Supplier’s VAT / Codice Fiscale."
-    },
-    {
-      "name": "Customer Name",
-      "description": "Recipient company (destinatario)."
-    },
+    { "name": "Carrier Name", "description": "Name of carrier or driver." },
     {
       "name": "Customer Address",
       "description": "Street, city, ZIP of the recipient."
     },
+    { "name": "Customer Name", "description": "Recipient company." },
     {
-      "name": "Transport Reason",
-      "description": "Causale del trasporto (e.g., Vendita, Reso)."
+      "name": "Document Date",
+      "description": "Date the delivery note was issued."
     },
     {
-      "name": "Carrier Name",
-      "description": "Name of carrier or driver (vettore)."
+      "name": "Document Number",
+      "description": "Sequential number printed on the delivery note."
+    },
+    {
+      "name": "Document Type",
+      "description": "Italian 'Documento di Trasporto' (DDT)."
+    },
+    {
+      "name": "Issue Place",
+      "description": "City where the delivery note was issued."
     },
     {
       "name": "Items Table",
       "description": "List of codes, descriptions, qty, price."
     },
     {
+      "name": "Signature",
+      "description": "Signature of carrier or recipient."
+    },
+    {
+      "name": "Supplier Name",
+      "description": "Company that issued the goods."
+    },
+    { "name": "Supplier VAT Nº", "description": "Supplier's VAT / Tax Code." },
+    {
       "name": "Total Amount",
       "description": "Total document amount incl. VAT."
     },
-    { "name": "Issue Place", "description": "City where the DDT was issued." },
-    { "name": "Signature", "description": "Signature of carrier or recipient." }
-  ],
-  "Passport": [
     {
-      "name": "Passport Number",
-      "description": "Alphanumeric passport identifier."
-    },
-    { "name": "Full Name", "description": "Holder’s full legal name." },
-    { "name": "Nationality", "description": "Country of citizenship." },
+      "name": "Transport Reason",
+      "description": "Reason for transport (e.g., Sale, Return)."
+    }
+  ],
+  "Invoice": {
+    "description": "Italian fiscal invoice: accounting document that summarizes sales operations or service provisions.",
+    "fields": [
+      { "name": "Client", "description": "Company name or client name" },
+      { "name": "Currency", "description": "EUR, USD, etc." },
+      { "name": "Invoice Date", "description": "Issue date" },
+      { "name": "Invoice Number", "description": "Sequential number / year" },
+      { "name": "Supplier", "description": "Supplier company name" },
+      { "name": "Tax", "description": "VAT amount" },
+      { "name": "Total Amount", "description": "Total amount to pay" },
+      { "name": "Total Taxable", "description": "Amount without VAT" },
+      { "name": "VAT Number", "description": "VAT or tax code of the supplier" }
+    ]
+  },
+  "Passport": [
     { "name": "Date of Birth", "description": "Day-Month-Year of birth." },
-    { "name": "Place of Birth", "description": "City / country of birth." },
-    { "name": "Date of Issue", "description": "Passport issuance date." },
     { "name": "Date of Expiry", "description": "Passport expiration date." },
+    { "name": "Date of Issue", "description": "Passport issuance date." },
+    { "name": "Full Name", "description": "Holder's full legal name." },
+    {
+      "name": "Holder Photograph",
+      "description": "Face photo printed in the passport."
+    },
     {
       "name": "Issuing Authority",
       "description": "Agency or office that issued the passport."
@@ -137,9 +132,24 @@
       "name": "MRZ",
       "description": "Machine-Readable Zone (two lines at bottom)."
     },
+    { "name": "Nationality", "description": "Country of citizenship." },
     {
-      "name": "Holder Photograph",
-      "description": "Face photo printed in the passport."
-    }
-  ]
+      "name": "Passport Number",
+      "description": "Alphanumeric passport identifier."
+    },
+    { "name": "Place of Birth", "description": "City / country of birth." }
+  ],
+  "PaySlip": {
+    "description": "Monthly payroll summary: monthly summary of wages, deductions and employee personal data.",
+    "fields": [
+      { "name": "Employee", "description": "Employee first and last name" },
+      { "name": "Employee ID", "description": "Internal ID or tax code" },
+      { "name": "Gross Salary", "description": "Gross salary for the period" },
+      { "name": "IBAN", "description": "Credit account" },
+      { "name": "Net Salary", "description": "Net amount paid" },
+      { "name": "Payment Date", "description": "Actual payment date" },
+      { "name": "Period", "description": "Month/year of reference" },
+      { "name": "Withholdings", "description": "Total contributions and taxes" }
+    ]
+  }
 }
