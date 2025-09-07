@@ -9,13 +9,9 @@ import io
 import base64
 import os
 import logging
-import pytesseract
 from openai import OpenAI
 from utils.utils import DEFAULT_OPENAI_MODEL
 
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
-)
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     logging.error("OPENAI_API_KEY not found in env")
@@ -31,11 +27,25 @@ def _ocr_llm(page: Image.Image) -> str:
     page.save(buf, format="PNG")
     data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
 
-    system_prompt = (
-        "You are an OCR engine. Return ONLY the literal Unicode text that "
-        "appears in the image, in reading order. No commentary, no JSON, "
-        "Format it as plain text but keep line breaks as they appear in the image.so that a human can read it easily."
-    )
+    system_prompt = """
+    You are an expert OCR (Optical Character Recognition) assistant. Your task is to extract ALL visible text from the document image with perfect accuracy.
+
+    Instructions:
+    1. Read every piece of text visible in the image, including:
+    - Headers, titles, and headings
+    - Body text and paragraphs
+    - Table contents and data
+    - Form fields and labels
+    - Numbers, dates, and codes
+    - Fine print and footnotes
+    - Watermarks or stamps (if readable)
+
+    2. Maintain the logical reading order (top to bottom, left to right)
+    3. Preserve line breaks and spacing where meaningful
+    4. Return ONLY the literal text - no commentary, no JSON formatting
+    5. If text is unclear or partially obscured, make your best attempt
+    6. Format as plain text but keep line breaks as they appear so humans can read it easily
+    """
 
     msg = [
         {"role": "system", "content": system_prompt},
@@ -55,25 +65,9 @@ def _ocr_llm(page: Image.Image) -> str:
         return ""
 
 
-# ── classic engines ───────────────────────────────────────────────
-_TESS_CFG = "--psm 6"
-
-
-def _ocr_tesseract(page: Image.Image) -> str:
-    return pytesseract.image_to_string(page, config=_TESS_CFG)
-
-
-# ── dispatch helper ───────────────────────────────────────────────
-_ENGINE_MAP = {
-    "tesseract": _ocr_tesseract,
-    "llm-ocr": _ocr_llm,  # ③
-}
-
-
-def run_ocr(pages: list[Image.Image], engine: str = "tesseract") -> str:
+def run_ocr(pages: list[Image.Image]) -> str:
     """
     Concatenate OCR text from **all** pages with double newlines.
-    `engine` may be 'tesseract' or 'llm-ocr' (case-insensitive).
+    Now LLM-only.
     """
-    fn = _ENGINE_MAP.get(engine.lower(), _ocr_tesseract)
-    return "\n\n".join(fn(p) for p in pages)
+    return "\n\n".join(_ocr_llm(p) for p in pages)

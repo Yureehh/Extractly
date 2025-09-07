@@ -5,7 +5,7 @@ import base64
 import json
 import logging
 import re
-from typing import List, Dict, Mapping
+from typing import List, Dict
 from PIL import Image
 from utils.openai_client import get_chat_completion
 from utils.utils import DEFAULT_OPENAI_MODEL
@@ -20,7 +20,7 @@ def _truncate(txt: str, max_chars: int = 64_000) -> str:
 def extract(
     images: List[Image.Image],
     schema: List[Dict],
-    ocr_text: Mapping[str, str] | None = None,
+    ocr_text: str | None = None,  # Changed from Mapping to str
     *,  # keyword-only "tuning" flags
     with_confidence: bool = False,
     system_prompt: str = "",
@@ -44,6 +44,7 @@ def extract(
         {"type": "image_url", "image_url": {"url": data_uri}},
         {"type": "text", "text": f"Fields schema: {schema_json}"},
     ]
+
     if ocr_text:
         usr.append(
             {
@@ -61,6 +62,7 @@ def extract(
     resp = get_chat_completion(
         messages, model=os.getenv("EXTRACT_MODEL", DEFAULT_OPENAI_MODEL)
     )
+
     if not resp.strip():
         raise RuntimeError("empty LLM response")
 
@@ -68,6 +70,7 @@ def extract(
     raw: Dict | None = None
     with contextlib.suppress(json.JSONDecodeError):
         raw = json.loads(resp)
+
     if raw is None and (m := re.search(r"\{.*\}", resp, flags=re.S)):
         with contextlib.suppress(json.JSONDecodeError):
             raw = json.loads(m.group())
@@ -90,15 +93,15 @@ def extract(
         raw_conf = {}
 
     # merge external OCR into snippets (OCR wins)
-    if isinstance(ocr_text, dict):
-        raw_snip |= ocr_text
+    if ocr_text:  # Changed from isinstance(ocr_text, dict) check
+        raw_snip["ocr_content"] = ocr_text
 
     # 5️⃣  fallback confidence --------------------------------------------------
     if with_confidence and not raw_conf:
         # heuristic: 1.0 if field present & not null, else 0.0
         raw_conf = score_confidence(raw_meta, schema)
 
-    # 6️⃣  final payload with _exact_ keys -------------------------------------
+    # 6️⃣  final payload with *exact* keys -------------------------------------
     return {
         "metadata": {n: raw_meta.get(n) for n in field_names},
         "snippets": {n: raw_snip.get(n) for n in field_names},

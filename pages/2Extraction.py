@@ -54,27 +54,45 @@ with st.sidebar:
         70,
         help="Documents below this confidence will be flagged",
     )
-
-    ocr_engine = st.selectbox(
-        "OCR engine",
-        ["LLM-OCR", "Tesseract"],
-        disabled=not run_ocr_checkbox,
-        key="sel_engine",
-    )
-
     # NEW: System Prompts Section
     st.header("🤖 System Prompts")
 
-    # Default prompts
-    DEFAULT_CLASSIFIER_PROMPT = "You are a document classifier."
-    DEFAULT_EXTRACTOR_PROMPT = "You are a metadata-extraction assistant.\nReturn only JSON with keys metadata, snippets, confidence."
+    # Updated default prompts
+    DEFAULT_CLASSIFIER_PROMPT = """
+    You are an expert document classifier specialized in analyzing business and legal documents. 
+    Your task is to classify the document type based on visual layout, text content, headers, logos, and structural elements. Consider:
+    - Document formatting and layout patterns
+    - Official headers, letterheads, and logos
+    - Specific terminology and field labels
+    - Regulatory compliance markers
+    - Standard document structures
+
+    Respond with only the most accurate document type from the provided list. If unsure, choose "Unknown".
+    """
+
+    DEFAULT_EXTRACTOR_PROMPT = """
+    You are a precise metadata extraction specialist. Your task is to extract specific field values from documents with high accuracy.
+
+    Instructions:
+    1. Analyze the document image carefully for text, tables, and structured data
+    2. Extract only the exact values for the requested fields
+    3. Use OCR context when provided to improve accuracy
+    4. If a field is not clearly visible or readable, return null
+    5. Maintain original formatting for dates, numbers, and codes
+    6. For confidence scores, rate 0.0-1.0 based on text clarity and certainty
+
+    Return valid JSON with three sections:
+    - "metadata": field values as key-value pairs
+    - "snippets": supporting text evidence for each field
+    - "confidence": confidence scores (0.0-1.0) for each extraction
+    """
 
     with st.expander("📝 Edit Prompts", expanded=False):
         st.subheader("Classification Prompt")
         classifier_prompt = st.text_area(
             "System prompt for document classification:",
             value=st.session_state.get("classifier_prompt", DEFAULT_CLASSIFIER_PROMPT),
-            height=100,
+            height=150,
             help="This prompt guides how the AI classifies document types",
             key="classifier_prompt_input",
         )
@@ -83,7 +101,7 @@ with st.sidebar:
         extractor_prompt = st.text_area(
             "System prompt for metadata extraction:",
             value=st.session_state.get("extractor_prompt", DEFAULT_EXTRACTOR_PROMPT),
-            height=150,
+            height=200,
             help="This prompt guides how the AI extracts metadata fields",
             key="extractor_prompt_input",
         )
@@ -175,8 +193,7 @@ if classify_clicked or seq_clicked:
         ocr_txt = ""
 
         if run_ocr_checkbox:
-            ocr_engine_name = "Paddle" if ocr_engine == "LLM-OCR" else "Tesseract"
-            ocr_txt = run_ocr(images, ocr_engine_name)
+            ocr_txt = run_ocr(images)  # Removed engine parameter - LLM only
             st.session_state.setdefault("ocr_map", {})
             st.session_state["ocr_map"][fname] = ocr_txt
             if (
@@ -203,8 +220,8 @@ if classify_clicked or seq_clicked:
                 use_confidence=calc_conf,
                 n_votes=5,
                 system_prompt=st.session_state.get(
-                    "classifier_prompt"
-                ),  # Add this line
+                    "classifier_prompt", DEFAULT_CLASSIFIER_PROMPT
+                ),
             )
             doc_type = cls_resp["doc_type"]
             confidence = cls_resp.get("confidence")
@@ -238,9 +255,10 @@ if doc_rows and not st.session_state.get("extracted"):
 
     for idx, row in enumerate(doc_rows):
         # CHANGE: Enhanced confidence display and unrecognized document handling
-        conf_pct = int(row.get("confidence", 0) * 100) if row.get("confidence") else 0
+        confidence_val = row.get("confidence")
+        conf_pct = int(confidence_val * 100) if confidence_val is not None else None
         is_unrecognized = row["final_type"] in ["Unknown", "Other"]
-        is_low_confidence = conf_pct < conf_threshold
+        is_low_confidence = conf_pct is not None and conf_pct < conf_threshold
 
         # Color-coded title based on status
         if is_unrecognized or is_low_confidence:
@@ -250,10 +268,15 @@ if doc_rows and not st.session_state.get("extracted"):
             status_emoji = "✅"
             title_color = "🟢"
 
+        # Build title with conditional confidence display
+        if calc_conf and conf_pct is not None:
+            title = f"{status_emoji} {row['file_name']} — {row['final_type']} {title_color} {conf_pct}%"
+        else:
+            title = f"{status_emoji} {row['file_name']} — {row['final_type']}"
+            
         with st.expander(
-            f"{status_emoji} {row['file_name']} — {row['final_type']} {title_color} {conf_pct}%",
-            expanded=is_unrecognized
-            or is_low_confidence,  # Auto-expand problematic ones
+            title,
+            expanded=is_unrecognized or is_low_confidence,  # Auto-expand problematic ones
         ):
             col1, col2, col3 = st.columns([1, 2, 1])
 
@@ -279,10 +302,9 @@ if doc_rows and not st.session_state.get("extracted"):
                     st.error("❌ Unrecognized document type")
                 elif is_low_confidence:
                     st.warning(f"⚠️ Low confidence ({conf_pct}% < {conf_threshold}%)")
-
             with col3:
-                # CHANGE: Enhanced confidence display in %
-                if calc_conf and row.get("confidence") is not None:
+                # CHANGE: Enhanced confidence display in % - only show if calc_conf is enabled
+                if calc_conf and conf_pct is not None:
                     if conf_pct >= 80:
                         st.success(f"🟢 {conf_pct}%")
                     elif conf_pct >= 60:
@@ -291,6 +313,8 @@ if doc_rows and not st.session_state.get("extracted"):
                         st.error(f"🔴 {conf_pct}%")
 
                     st.caption(f"Threshold: {conf_threshold}%")
+                elif calc_conf:
+                    st.caption("Confidence not computed")
 
     if st.button("💾 Save type corrections"):
         for row in doc_rows:
@@ -336,15 +360,15 @@ if (extract_clicked or seq_clicked) and not st.session_state.get("extracted"):
 
         ocr_txt = None
         if run_ocr_checkbox:
-            engine_name = "Paddle" if ocr_engine == "LLM-OCR" else "Tesseract"
-            ocr_txt = run_ocr(row["images"], engine_name)
-
+            ocr_txt = run_ocr(row["images"])  # Removed engine parameter - LLM only
         out = extract(
             row["images"],
             schema,
             ocr_text=ocr_txt,
             with_confidence=calc_conf,
-            system_prompt=st.session_state.get("extractor_prompt"),  # Add this line
+            system_prompt=st.session_state.get(
+                "extractor_prompt", DEFAULT_EXTRACTOR_PROMPT
+            ),
         ) or {"metadata": {}, "confidence": {}}
 
         if not any(out["metadata"].values()):
@@ -444,8 +468,8 @@ if st.session_state.get("extracted"):
                         ocr_text=ocr_txt,
                         with_confidence=calc_conf,
                         system_prompt=st.session_state.get(
-                            "extractor_prompt"
-                        ),  # Add this line
+                            "extractor_prompt", DEFAULT_EXTRACTOR_PROMPT
+                        ),
                     ) or {"metadata": {}, "confidence": {}}
 
                     row["fields"] = new_out["metadata"]
@@ -504,7 +528,6 @@ if st.session_state.get("extracted"):
                         },
                         "processing_info": {
                             "ocr_used": run_ocr_checkbox,
-                            "ocr_engine": ocr_engine if run_ocr_checkbox else "none",
                             "confidence_threshold": f"{conf_threshold}%",
                         },
                     }
