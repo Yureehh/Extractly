@@ -171,7 +171,7 @@ schema_desc = st.text_area(
 raw_table = st.data_editor(
     st.session_state.field_data,  # static snapshot
     num_rows="dynamic",
-    use_container_width=True,
+    width="stretch",
     key="field_editor",
 )
 
