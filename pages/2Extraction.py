@@ -58,8 +58,7 @@ with st.sidebar:
     st.header("🤖 System Prompts")
 
     # Updated default prompts
-    DEFAULT_CLASSIFIER_PROMPT = """
-    You are an expert document classifier specialized in analyzing business and legal documents. 
+    DEFAULT_CLASSIFIER_PROMPT = """You are an expert document classifier specialized in analyzing business and legal documents.
     Your task is to classify the document type based on visual layout, text content, headers, logos, and structural elements. Consider:
     - Document formatting and layout patterns
     - Official headers, letterheads, and logos
@@ -70,8 +69,7 @@ with st.sidebar:
     Respond with only the most accurate document type from the provided list. If unsure, choose "Unknown".
     """
 
-    DEFAULT_EXTRACTOR_PROMPT = """
-    You are a precise metadata extraction specialist. Your task is to extract specific field values from documents with high accuracy.
+    DEFAULT_EXTRACTOR_PROMPT = """You are a precise metadata extraction specialist. Your task is to extract specific field values from documents with high accuracy.
 
     Instructions:
     1. Analyze the document image carefully for text, tables, and structured data
@@ -273,7 +271,7 @@ if doc_rows and not st.session_state.get("extracted"):
             title = f"{status_emoji} {row['file_name']} — {row['final_type']} {title_color} {conf_pct}%"
         else:
             title = f"{status_emoji} {row['file_name']} — {row['final_type']}"
-            
+
         with st.expander(
             title,
             expanded=is_unrecognized or is_low_confidence,  # Auto-expand problematic ones
