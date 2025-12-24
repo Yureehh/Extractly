@@ -159,11 +159,9 @@ doc_rows: list[dict] = st.session_state["doc_rows"]
 
 # ───── run buttons ─────────────────────────────────────────────────
 c1, c2, c3 = st.columns(3)
-seq_clicked = c1.button("🚀 Classify & Extract", use_container_width=True)
-classify_clicked = c2.button("▶️ Classify Only", use_container_width=True)
-extract_clicked = c3.button(
-    "⚡ Extract All", disabled=not doc_rows, use_container_width=True
-)
+seq_clicked = c1.button("🚀 Classify & Extract", width="stretch")
+classify_clicked = c2.button("▶️ Classify Only", width="stretch")
+extract_clicked = c3.button("⚡ Extract All", disabled=not doc_rows, width="stretch")
 
 if st.button("🔄 Start over (keep uploads)", key="reset_all", type="secondary"):
     for k in ("doc_rows", "extracted", "ocr_map", "ocr_preview"):
@@ -274,7 +272,8 @@ if doc_rows and not st.session_state.get("extracted"):
 
         with st.expander(
             title,
-            expanded=is_unrecognized or is_low_confidence,  # Auto-expand problematic ones
+            expanded=is_unrecognized
+            or is_low_confidence,  # Auto-expand problematic ones
         ):
             col1, col2, col3 = st.columns([1, 2, 1])
 
@@ -440,7 +439,7 @@ if st.session_state.get("extracted"):
                 df,
                 key=f"grid_{row['doc_id']}",
                 disabled=["Field", "Conf."],
-                use_container_width=True,
+                width="stretch",
             )
 
             updated_values = pd.Series(
@@ -533,9 +532,7 @@ if st.session_state.get("extracted"):
     # Enhanced bulk save with session summary
     col1, col2 = st.columns([3, 1])
     with col1:
-        if st.button(
-            "💾 Save all corrections", use_container_width=True, type="primary"
-        ):
+        if st.button("💾 Save all corrections", width="stretch", type="primary"):
             saved_count = 0
             for row in st.session_state["doc_rows"]:
                 if row["final_type"] not in ["Unknown", "Other"]:
@@ -558,7 +555,7 @@ if st.session_state.get("extracted"):
 
     with col2:
         # NEW: Bulk download button
-        if st.button("📥 Download All JSON", use_container_width=True):
+        if st.button("📥 Download All JSON", width="stretch"):
             # Prepare bulk export
             bulk_results = {
                 "export_info": {
