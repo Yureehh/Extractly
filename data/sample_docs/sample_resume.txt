@@ -1,0 +1,6 @@
+Resume
+Name: Jordan Lee
+Role: Product Engineer
+Experience: 6 years
+Location: Milan, IT
+Skills: Streamlit, Python, OCR, LLM pipelines

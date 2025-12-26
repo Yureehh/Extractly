@@ -1,0 +1,48 @@
+{
+  "Invoice Demo": {
+    "description": "Client-ready demo schema for invoice metadata.",
+    "version": "v1",
+    "fields": [
+      {
+        "name": "Invoice Number",
+        "type": "string",
+        "required": true,
+        "description": "Unique invoice identifier",
+        "example": "INV-2025-0042"
+      },
+      {
+        "name": "Invoice Date",
+        "type": "date",
+        "required": true,
+        "description": "Issue date",
+        "example": "2025-01-15"
+      },
+      {
+        "name": "Supplier",
+        "type": "string",
+        "required": true,
+        "description": "Supplier company name"
+      },
+      {
+        "name": "Client",
+        "type": "string",
+        "required": true,
+        "description": "Client company name"
+      },
+      {
+        "name": "Total Amount",
+        "type": "number",
+        "required": true,
+        "description": "Invoice total",
+        "example": "1248.50"
+      },
+      {
+        "name": "Payment Terms",
+        "type": "string",
+        "required": false,
+        "description": "Payment terms",
+        "example": "Net 30"
+      }
+    ]
+  }
+}
