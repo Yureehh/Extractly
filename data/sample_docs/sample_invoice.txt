@@ -1,0 +1,8 @@
+Invoice
+Invoice Number: INV-2025-0042
+Invoice Date: 2025-01-15
+Supplier: Northwind Analytics LLC
+Client: Contoso Retail
+Total Amount: 1,248.50 EUR
+VAT: 22%
+Payment Terms: Net 30

@@ -1,12 +1,8 @@
-# utils/classifier.py
+from __future__ import annotations
 
-import os
-import io
-import base64
 from PIL import Image
-from utils.openai_client import get_chat_completion
-from statistics import mode, StatisticsError
-from utils.utils import DEFAULT_OPENAI_MODEL
+
+from extractly.pipeline.classification import classify_document
 
 
 def classify(
@@ -14,39 +10,13 @@ def classify(
     candidates: list[str],
     *,
     use_confidence: bool = False,
-    n_votes: int = 5,  # number of self-consistency calls
+    n_votes: int = 5,
     system_prompt: str = "",
 ) -> dict:
-    """Returns {'doc_type': str} or additionally a 'confidence' field."""
-
-    def _single_vote() -> str:
-        buf = io.BytesIO()
-        images[0].save(buf, format="PNG")
-        data_uri = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
-
-        prompt = f"Choose one type from: {candidates}. Return only the type."
-        msgs = [
-            {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": data_uri}},
-                ],
-            },
-        ]
-        return get_chat_completion(
-            msgs, model=os.getenv("CLASSIFY_MODEL", DEFAULT_OPENAI_MODEL)
-        ).strip()
-
-    if not use_confidence:
-        return {"doc_type": _single_vote()}
-
-    votes = [_single_vote() for _ in range(n_votes)]
-    try:
-        best = mode(votes)
-        confidence = votes.count(best) / n_votes
-    except StatisticsError:  # all votes different
-        best, confidence = votes[0], 1 / n_votes
-
-    return {"doc_type": best, "confidence": confidence}
+    return classify_document(
+        images,
+        candidates,
+        use_confidence=use_confidence,
+        n_votes=n_votes,
+        system_prompt=system_prompt or None,
+    )

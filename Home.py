@@ -1,155 +1,133 @@
-"""
-Landing page – stylish hero header + live stats.
-"""
+from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
+from pathlib import Path
 import streamlit as st
-from utils.utils import load_feedback
-from dotenv import load_dotenv
-from utils.ui_components import inject_logo, inject_common_styles
 
-# Load API key from .env
-load_dotenv(override=True)
+from extractly.config import load_config
+from extractly.domain.run_store import RunStore
+from extractly.logging import setup_logging
+from extractly.ui.components import inject_branding, inject_global_styles, section_title
 
-st.set_page_config("Extractly", page_icon="🪄", layout="wide")
 
-# Inject logo and common styles
-inject_logo("data/assets/data_reply.svg", height="80px")  # Adjust height as needed
-inject_common_styles()
+config = load_config()
+setup_logging()
 
-# Theme-adaptive CSS using Streamlit's CSS variables
-if "home_css" not in st.session_state:
-    st.markdown(
-        """
-    <style>
-    .hero {
-        text-align: center;
-        margin: 3rem 0;
-    }
-    .hero h1 {
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: var(--text-color);
-    }
-    .hero p {
-        font-size: 1.2rem;
-        color: var(--text-color);
-        opacity: 0.7;
-    }
-    .metric {
-        padding: 1.5rem;
-        border-radius: 1rem;
-        background-color: var(--secondary-background-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        margin: 0.5rem;
-        text-align: center;
-        border: 1px solid rgba(128, 128, 128, 0.1);
-    }
-    .metric h2 {
-        margin: 0;
-        font-size: 3rem;
-        font-weight: 600;
-        color: var(--primary-color);
-    }
-    .metric p {
-        margin-top: 0.5rem;
-        font-size: 1rem;
-        color: var(--text-color);
-    }
-    .metric:hover {
-        box-shadow: 0 0 16px rgba(var(--primary-color-rgb), 0.3);
-        transition: 0.3s;
-    }
-    .sidebar-tip {
-        text-align: center;
-        color: var(--text-color);
-        opacity: 0.6;
-        margin-top: 2rem;
-        font-size: 1rem;
-    }
-    /* Custom success rate colors that work in both themes */
-    .success-high { color: #10b981 !important; }
-    .success-medium { color: #f59e0b !important; }
-    .success-low { color: #ef4444 !important; }
-    </style>
-    """,
-        unsafe_allow_html=True,
-    )
-    st.session_state.home_css = True
+st.set_page_config(page_title="Extractly", page_icon="✨", layout="wide")
 
-# Hero header
+inject_branding(Path("data/assets/data_reply.svg"))
+inject_global_styles()
+
+run_store = RunStore(config.run_store_dir)
+runs = run_store.list_runs()
+
 st.markdown(
     """
-<div class="hero">
-  <h1>🪄 Extractly</h1>
-  <p>AI-powered metadata classification & extraction for every document.</p>
-</div>
-""",
+    <div class="extractly-hero">
+        <h1>Extractly — Document Metadata Extraction Studio</h1>
+        <p>Design schemas, classify incoming documents, and extract structured metadata in minutes. Built for
+        client-ready demos with traceability, exports, and run history baked in.</p>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
-# Live stats with enhanced confidence metrics
-feedback = load_feedback()
-today_utc = datetime.now(timezone.utc).date()
+cta_cols = st.columns([1, 1, 2])
+with cta_cols[0]:
+    st.page_link("pages/1_Schema_Studio.py", label="🚀 Build a schema", use_container_width=True)
+with cta_cols[1]:
+    st.page_link("pages/2_Extract.py", label="⚡ Run extraction", use_container_width=True)
 
-total_docs = len({r["doc_id"] for r in feedback})
-total_fields_corrected = sum(len(r.get("fields_corrected", [])) for r in feedback)
+st.markdown("<br>", unsafe_allow_html=True)
 
-docs_today = 0
-high_confidence_docs = 0
-
-for r in feedback:
-    try:
-        if datetime.fromisoformat(r["timestamp"]).date() == today_utc:
-            docs_today += 1
-
-        # Count high confidence extractions
-        if r.get("metadata_extracted"):
-            non_empty_fields = sum(
-                bool(v and str(v).strip()) for v in r["metadata_extracted"].values()
-            )
-            total_fields = len(r["metadata_extracted"])
-            if total_fields > 0 and (non_empty_fields / total_fields) >= 0.7:
-                high_confidence_docs += 1
-    except Exception:
-        continue
-
-# Calculate success rate percentage
-success_rate = int((high_confidence_docs / total_docs) * 100) if total_docs > 0 else 0
-
-# Metric cards
-cols = st.columns(4)
-values = [
-    ("Docs Today", docs_today, None),
-    ("Total Docs", total_docs, None),
-    ("Success Rate", f"{success_rate}%", success_rate),
-    ("Fields Corrected", total_fields_corrected, None),
-]
-
-for col, (label, val, rate) in zip(cols, values):
-    # Color coding for success rate
-    color_style = ""
-    if label == "Success Rate":
-        if success_rate >= 80:
-            color_style = "color: #10b981;"  # green
-        elif success_rate >= 60:
-            color_style = "color: #f59e0b;"  # yellow
-        else:
-            color_style = "color: #ef4444;"  # red
-
-    col.markdown(
-        f"""
-    <div class="metric">
-      <h2 style="{color_style}">{val}</h2>
-      <p>{label}</p>
+section_title("How it works", "A streamlined workflow your clients understand in seconds.")
+steps = st.columns(3)
+steps[0].markdown(
+    """
+    <div class="extractly-step">
+        <strong>Step A — Define a schema</strong>
+        <p>Design fields, types, and requirements in Schema Studio or import JSON templates.</p>
     </div>
     """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
+steps[1].markdown(
+    """
+    <div class="extractly-step">
+        <strong>Step B — Upload documents</strong>
+        <p>Batch PDFs, images, or text. Enable OCR or fast mode depending on fidelity.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+steps[2].markdown(
+    """
+    <div class="extractly-step">
+        <strong>Step C — Review results</strong>
+        <p>View JSON, confidence scores, warnings, and exportable tables.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+section_title("Product highlights", "Purpose-built for metadata extraction teams and demos.")
+features = st.columns(3)
+features[0].markdown(
+    """
+    <div class="extractly-card">
+        <h4>Schema Studio</h4>
+        <p>Field editor, JSON preview, templates, and validation in one place.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+features[1].markdown(
+    """
+    <div class="extractly-card">
+        <h4>Extraction Pipeline</h4>
+        <p>Classification, extraction, validation, and export with transparent logs.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+features[2].markdown(
+    """
+    <div class="extractly-card">
+        <h4>Run History</h4>
+        <p>Every run is stored locally with artifacts for traceability and demos.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+section_title("Live workspace snapshot")
+col_a, col_b, col_c = st.columns(3)
+col_a.metric("Runs stored", len(runs))
+latest_run = runs[0]["started_at"] if runs else "—"
+col_b.metric("Latest run", latest_run)
+col_c.metric("Schemas ready", len(list(config.schema_dir.glob("*.json"))))
 
 st.markdown("---")
 
-st.markdown(
-    '<div class="sidebar-tip">⬅ Use the sidebar to open <strong>Inference</strong> or <strong>Schemas</strong>.</div>',
-    unsafe_allow_html=True,
+section_title("Demo flow")
+st.write(
+    "Use the sample schemas and documents shipped in the repo to walk through a full demo. "
+    "Start in Schema Studio, then upload a sample document in Extract, and finish in Results."
 )
+
+sample_dir = config.sample_data_dir
+if sample_dir.exists():
+    samples = [p.name for p in sample_dir.glob("*.txt")]
+    if samples:
+        st.caption(f"Sample docs: {', '.join(samples)}")
+
+st.info(
+    "Need configuration? Visit Settings to review model choice, retries, and environment checks.",
+    icon="⚙️",
+)
+
+st.caption(f"Last refreshed: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
