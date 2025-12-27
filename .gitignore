@@ -19,6 +19,7 @@ lib64/
 parts/
 sdist/
 var/
+runs/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -103,12 +104,5 @@ credentials.json
 *.pkl
 *.xlsx
 
-# All end_state files
-end_state_*
-events_*
-
-# External data
-oe_data.csv
-
-# Gifs
-data/heatmaps/*
+# Feedback files
+feedback.json
